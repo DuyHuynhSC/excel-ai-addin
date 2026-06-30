@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trợ Lý Excel AI</title>
+  <!-- Nhúng font chữ Outfit và Inter từ Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS riêng của add-in -->
+  <link rel="stylesheet" href="taskpane.css">
+  <!-- Nhúng Office.js API -->
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-orb"></div>
+        <h1>Excel <span>AI Assistant</span></h1>
+      </div>
+      <div class="connection-status-dot offline" id="connection-dot" title="Đang kiểm tra kết nối..."></div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-nav">
+      <button class="nav-tab active" data-tab="tab-translate" id="tab-btn-translate">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+        <span>Dịch</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-analyze" id="tab-btn-analyze">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Phân tích</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-summarize" id="tab-btn-summarize">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M4 6h16"/><path d="M4 10h16"/><path d="M4 14h10"/><path d="M4 18h10"/></svg>
+        <span>Tóm tắt</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-history" id="tab-btn-history">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        <span>Lịch sử</span>
+      </button>
+      <button class="nav-tab" data-tab="tab-settings" id="tab-btn-settings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Cài đặt</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="app-main-content">
+
+      <!-- TAB: TRANSLATE -->
+      <section class="tab-pane active" id="tab-translate">
+        <div class="form-group">
+          <label>Ngôn ngữ nguồn</label>
+          <select id="translate-source" class="custom-select">
+            <option value="Tự động phát hiện" selected>Tự động phát hiện</option>
+            <option value="Tiếng Anh">Tiếng Anh (English)</option>
+            <option value="Tiếng Việt">Tiếng Việt</option>
+            <option value="Tiếng Nhật">Tiếng Nhật (Japanese)</option>
+            <option value="Tiếng Trung">Tiếng Trung (Chinese)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ngôn ngữ đích</label>
+          <select id="translate-target" class="custom-select">
+            <option value="Tiếng Việt" selected>Tiếng Việt</option>
+            <option value="Tiếng Anh">Tiếng Anh (English)</option>
+            <option value="Tiếng Nhật">Tiếng Nhật (Japanese)</option>
+            <option value="Tiếng Trung">Tiếng Trung (Chinese)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Giọng văn (Tone)</label>
+          <div class="tone-toggle-group">
+            <input type="radio" id="tone-neutral" name="translate-tone" value="neutral" checked>
+            <label for="tone-neutral">Trung lập</label>
+
+            <input type="radio" id="tone-formal" name="translate-tone" value="formal">
+            <label for="tone-formal">Trang trọng</label>
+
+            <input type="radio" id="tone-informal" name="translate-tone" value="informal">
+            <label for="tone-informal">Thân mật</label>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-run-translate">
+          <span>Dịch ô đang chọn</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg>
+        </button>
+      </section>
+
+      <!-- TAB: ANALYZE -->
+      <section class="tab-pane" id="tab-analyze">
+        <div class="form-group">
+          <label>Loại phân tích</label>
+          <select id="analyze-focus" class="custom-select">
+            <option value="general" selected>Phân tích tổng quan</option>
+            <option value="sentiment">Phân tích sắc thái (Sentiment)</option>
+            <option value="entities">Trích xuất thực thể (Entities)</option>
+            <option value="data_cleanup">Đánh giá & Làm sạch dữ liệu</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Hướng dẫn bổ sung (Tùy chọn)</label>
+          <textarea id="analyze-custom" placeholder="Ví dụ: Chỉ liệt kê các công ty công nghệ được nhắc đến..." rows="3" class="custom-textarea"></textarea>
+        </div>
+
+        <button class="btn-primary" id="btn-run-analyze">
+          <span>Phân tích ô đang chọn</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.2 8.4-9.5 9.5a2.5 2.5 0 0 1-3.4 0L3 12.6a2.5 2.5 0 0 1 0-3.4l9.5-9.5a2.5 2.5 0 0 1 3.4 0l5.3 5.3a2.5 2.5 0 0 1 0 3.4Z"/></svg>
+        </button>
+      </section>
+
+      <!-- TAB: SUMMARIZE -->
+      <section class="tab-pane" id="tab-summarize">
+        <div class="form-group">
+          <label>Định dạng tóm tắt</label>
+          <select id="summarize-format" class="custom-select">
+            <option value="paragraph" selected>Đoạn văn ngắn</option>
+            <option value="bullets">Gạch đầu dòng (Ý chính)</option>
+            <option value="key_actions">Hành động cần làm (Actions)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Độ dài</label>
+          <div class="tone-toggle-group">
+            <input type="radio" id="sum-concise" name="summarize-length" value="concise" checked>
+            <label for="sum-concise">Ngắn gọn</label>
+
+            <input type="radio" id="sum-detailed" name="summarize-length" value="detailed">
+            <label for="sum-detailed">Chi tiết</label>
+          </div>
+        </div>
+
+        <div class="form-group row-checkbox">
+          <input type="checkbox" id="summarize-new-sheet" checked>
+          <label for="summarize-new-sheet">Lưu vào trang tính riêng ("Summaries")</label>
+        </div>
+
+        <button class="btn-primary" id="btn-run-summarize">
+          <span>Tóm tắt ô đang chọn</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+        </button>
+      </section>
+
+      <!-- TAB: HISTORY -->
+      <section class="tab-pane" id="tab-history">
+        <div class="history-header">
+          <h3>Nhật ký hoạt động</h3>
+          <button class="btn-link" id="btn-clear-history">Xóa lịch sử</button>
+        </div>
+        <div class="history-list" id="history-container">
+          <p class="history-empty">Chưa có hoạt động nào được lưu trữ.</p>
+        </div>
+      </section>
+
+      <!-- TAB: SETTINGS -->
+      <section class="tab-pane" id="tab-settings">
+        <div class="form-group">
+          <label>Dịch vụ AI hoạt động</label>
+          <div class="service-select-group">
+            <input type="radio" id="service-ollama" name="active-service" value="ollama" checked>
+            <label for="service-ollama" class="service-box">
+              <span class="service-title">Ollama (Local)</span>
+              <span class="service-desc">Không mất phí, bảo mật nội bộ</span>
+            </label>
+
+            <input type="radio" id="service-custom" name="active-service" value="custom">
+            <label for="service-custom" class="service-box">
+              <span class="service-title">Custom API Gateway</span>
+              <span class="service-desc">Tốc độ cao, mô hình mạnh mẽ</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-collapsible">
+          <div class="form-group">
+            <label>Địa chỉ Ollama API</label>
+            <input type="url" id="setting-ollama-url" class="custom-input" placeholder="http://localhost:11434">
+          </div>
+
+          <div class="form-group">
+            <label>Địa chỉ Custom API Gateway</label>
+            <input type="url" id="setting-custom-url" class="custom-input" placeholder="https://api.company.com/v1">
+          </div>
+
+          <div class="form-group">
+            <label>Custom API Key</label>
+            <input type="password" id="setting-custom-key" class="custom-input" placeholder="••••••••••••••••">
+          </div>
+
+          <div class="form-group row-checkbox">
+            <input type="checkbox" id="setting-fallback" checked>
+            <label for="setting-fallback">Tự động kích hoạt dự phòng (Fallback) khi lỗi</label>
+          </div>
+
+          <div class="model-mapping-section">
+            <h4>Cấu hình Model cho tác vụ</h4>
+            <div class="form-group">
+              <label>Dịch thuật (Translation)</label>
+              <input type="text" id="model-translation" class="custom-input" placeholder="phi:2b">
+            </div>
+            <div class="form-group">
+              <label>Phân tích (Analysis)</label>
+              <input type="text" id="model-analysis" class="custom-input" placeholder="llama2:7b-chat">
+            </div>
+            <div class="form-group">
+              <label>Tóm tắt (Summarization)</label>
+              <input type="text" id="model-summarization" class="custom-input" placeholder="mistral:7b">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-save-settings">Lưu cấu hình</button>
+      </section>
+
+    </main>
+
+    <!-- Console / Realtime Output Overlay -->
+    <div class="output-panel hidden" id="status-panel">
+      <div class="panel-header">
+        <div class="status-indicator">
+          <div class="status-spinner" id="status-spinner"></div>
+          <span class="status-text" id="status-text">⏳ Đang xử lý...</span>
+        </div>
+        <button class="btn-close" id="btn-close-status" title="Đóng bảng kết quả">✕</button>
+      </div>
+      <div class="panel-content">
+        <div class="stream-output" id="stream-output-content"></div>
+        <div class="meta-output" id="meta-output-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bundle script do Vite sinh ra -->
+  <script type="module" src="taskpane.ts"></script>
+</body>
+</html>
