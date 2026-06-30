@@ -72,6 +72,10 @@ export async function encryptText(text: string): Promise<string> {
 export async function decryptText(encryptedText: string): Promise<string> {
   if (!encryptedText) return '';
   try {
+    if (!encryptedText.includes(':')) {
+      // Khóa dạng plain text (ví dụ nạp từ tệp .env), trả về trực tiếp
+      return encryptedText;
+    }
     const parts = encryptedText.split(':');
     if (parts.length !== 2) {
       throw new Error('Định dạng chuỗi mã hóa không hợp lệ.');

@@ -112,7 +112,8 @@ function setupSettingsForm(config: AppConfig) {
 
     try {
       const activeService = selectCustom.checked ? 'custom' : 'ollama';
-      let customApiKey = config.customApiKey;
+      const currentConfig = loadConfig();
+      let customApiKey = currentConfig.customApiKey;
 
       // Chỉ mã hóa nếu người dùng nhập Key mới (không rỗng hoặc không phải kí tự che mắt)
       const inputKeyVal = inputCustomKey.value.trim();
@@ -130,7 +131,7 @@ function setupSettingsForm(config: AppConfig) {
           translation: modelTranslation.value.trim() || 'phi:2b',
           analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
           summarization: modelSummarization.value.trim() || 'mistral:7b',
-          custom: config.models.custom
+          custom: currentConfig.models.custom
         }
       };
 
@@ -148,6 +149,68 @@ function setupSettingsForm(config: AppConfig) {
     } finally {
       btnSave.textContent = 'Lưu cấu hình';
       btnSave.removeAttribute('disabled');
+    }
+  });
+
+  // Sự kiện Kiểm tra kết nối trực tiếp
+  const btnTest = document.getElementById('btn-test-settings');
+  btnTest?.addEventListener('click', async () => {
+    btnTest.textContent = 'Đang kiểm tra...';
+    btnTest.setAttribute('disabled', 'true');
+    showStatusOverlay('pending', '⏳ Đang kiểm tra kết nối tới các dịch vụ...');
+
+    try {
+      const activeService = selectCustom.checked ? 'custom' : 'ollama';
+      const currentConfig = loadConfig();
+      let customApiKey = currentConfig.customApiKey;
+
+      const inputKeyVal = inputCustomKey.value.trim();
+      if (inputKeyVal && !inputKeyVal.includes('••••')) {
+        customApiKey = await encryptText(inputKeyVal);
+      }
+
+      const tempConfig: AppConfig = {
+        ollamaUrl: inputOllamaUrl.value.trim(),
+        customApiUrl: inputCustomUrl.value.trim(),
+        customApiKey: customApiKey,
+        activeService: activeService as 'ollama' | 'custom',
+        fallbackEnabled: checkFallback.checked,
+        models: {
+          translation: modelTranslation.value.trim() || 'phi:2b',
+          analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
+          summarization: modelSummarization.value.trim() || 'mistral:7b',
+          custom: currentConfig.models.custom
+        }
+      };
+
+      const tempFactory = new ApiFactory(tempConfig);
+      const health = await tempFactory.checkHealth();
+
+      let resultText = '';
+      let status: 'success' | 'error' = 'success';
+
+      if (tempConfig.activeService === 'custom') {
+        if (health.custom) {
+          resultText = '✅ Kết nối tới Custom API Gateway thành công!';
+        } else {
+          resultText = '❌ Kết nối tới Custom API Gateway thất bại. Vui lòng kiểm tra lại URL và API Key.';
+          status = 'error';
+        }
+      } else {
+        if (health.ollama) {
+          resultText = '✅ Kết nối tới Ollama (Local) thành công!';
+        } else {
+          resultText = '❌ Kết nối tới Ollama (Local) thất bại. Vui lòng kiểm tra xem Ollama đã được khởi chạy chưa.';
+          status = 'error';
+        }
+      }
+
+      showStatusOverlay(status, resultText);
+    } catch (e) {
+      showStatusOverlay('error', `❌ Lỗi kiểm tra kết nối: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      btnTest.textContent = 'Kiểm tra kết nối';
+      btnTest.removeAttribute('disabled');
     }
   });
 }

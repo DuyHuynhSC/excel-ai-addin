@@ -34,9 +34,9 @@ describe('CryptoUtils Unit Tests', () => {
     expect(await decryptText('')).toBe('');
   });
 
-  it('should return empty string if decryption payload format is invalid', async () => {
-    const invalidText = 'random-text-without-colon';
-    const decrypted = await decryptText(invalidText);
-    expect(decrypted).toBe('');
+  it('should bypass decryption and return text directly if no colon is present', async () => {
+    const plainTextKey = 'random-text-without-colon';
+    const decrypted = await decryptText(plainTextKey);
+    expect(decrypted).toBe(plainTextKey);
   });
 });
