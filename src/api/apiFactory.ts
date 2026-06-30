@@ -16,22 +16,29 @@ export class ApiFactory {
   private config: AppConfig;
   private ollamaClient: OllamaClient;
   private customApiClient: CustomApiClient | null = null;
+  private customClientInitialized = false;
 
   constructor(config: AppConfig) {
     this.config = config;
     this.ollamaClient = new OllamaClient(config.ollamaUrl);
-    this.initializeCustomClient();
   }
 
-  private async initializeCustomClient() {
-    try {
-      const decryptedKey = await decryptText(this.config.customApiKey);
-      if (decryptedKey) {
-        this.customApiClient = new CustomApiClient(this.config.customApiUrl, decryptedKey);
+  private async getCustomClient(): Promise<CustomApiClient | null> {
+    if (!this.customClientInitialized) {
+      try {
+        const decryptedKey = await decryptText(this.config.customApiKey);
+        if (decryptedKey) {
+          this.customApiClient = new CustomApiClient(this.config.customApiUrl, decryptedKey);
+        } else {
+          this.customApiClient = null;
+        }
+      } catch (e) {
+        console.error('Không thể giải mã Custom API Key:', e);
+        this.customApiClient = null;
       }
-    } catch (e) {
-      console.error('Không thể giải mã Custom API Key:', e);
+      this.customClientInitialized = true;
     }
+    return this.customApiClient;
   }
 
   /**
@@ -40,12 +47,8 @@ export class ApiFactory {
   async updateConfig(newConfig: AppConfig) {
     this.config = newConfig;
     this.ollamaClient = new OllamaClient(newConfig.ollamaUrl);
-    const decryptedKey = await decryptText(newConfig.customApiKey);
-    if (decryptedKey) {
-      this.customApiClient = new CustomApiClient(newConfig.customApiUrl, decryptedKey);
-    } else {
-      this.customApiClient = null;
-    }
+    this.customApiClient = null;
+    this.customClientInitialized = false;
   }
 
   /**
@@ -114,11 +117,12 @@ export class ApiFactory {
    * Thực hiện gọi Custom API Client
    */
   private async callCustomApi(options: UnifiedGenerateOptions, taskType: TaskType): Promise<ApiResponse> {
-    if (!this.customApiClient) {
+    const client = await this.getCustomClient();
+    if (!client) {
       throw new Error('Dịch vụ Custom API chưa được cấu hình API Key hoặc lỗi giải mã khóa.');
     }
     const model = this.config.models[taskType] || this.config.models.custom;
-    return await this.customApiClient.generate(
+    return await client.generate(
       {
         model,
         prompt: options.prompt,
@@ -161,8 +165,11 @@ export class ApiFactory {
    * Lấy danh sách model có sẵn của service hoạt động hiện tại
    */
   async getActiveModels(): Promise<string[]> {
-    if (this.config.activeService === 'custom' && this.customApiClient) {
-      return await this.customApiClient.getModels();
+    if (this.config.activeService === 'custom') {
+      const client = await this.getCustomClient();
+      if (client) {
+        return await client.getModels();
+      }
     }
     return await this.ollamaClient.getModels();
   }
@@ -172,8 +179,10 @@ export class ApiFactory {
    */
   async checkHealth(): Promise<{ ollama: boolean; custom: boolean }> {
     const ollamaPromise = this.ollamaClient.testConnection();
-    const customPromise = this.customApiClient
-      ? this.customApiClient.testConnection()
+    
+    const client = await this.getCustomClient();
+    const customPromise = client
+      ? client.testConnection()
       : Promise.resolve(false);
 
     // Timeout kết nối là 15 giây
