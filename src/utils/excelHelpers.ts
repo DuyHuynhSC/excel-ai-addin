@@ -1,7 +1,6 @@
 /* global Excel */
 
 export interface CellData {
-  address: string;
   value: string;
   row: number;
   col: number;
@@ -15,7 +14,7 @@ export async function getSelectedCellsData(): Promise<CellData[]> {
   return await Excel.run(async (context) => {
     const range = context.workbook.getSelectedRange();
     // Load các thuộc tính cần dùng
-    range.load(['values', 'address', 'rowCount', 'columnCount']);
+    range.load(['values', 'rowCount', 'columnCount']);
     await context.sync();
 
     const data: CellData[] = [];
@@ -27,7 +26,6 @@ export async function getSelectedCellsData(): Promise<CellData[]> {
         // Chỉ xử lý các ô có chứa ký tự chữ/số
         if (val !== undefined && val !== null && String(val).trim() !== '') {
           data.push({
-            address: range.getCell(r, c).address,
             value: String(val),
             row: r,
             col: c
