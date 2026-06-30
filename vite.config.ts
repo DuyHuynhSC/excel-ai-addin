@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import basicSsl from '@vitejs/plugin-basic-ssl';
+import fs from 'fs';
+import os from 'os';
+
+const homedir = os.homedir();
+const certPath = resolve(homedir, '.office-addin-dev-certs/localhost.crt');
+const keyPath = resolve(homedir, '.office-addin-dev-certs/localhost.key');
 
 export default defineConfig({
-  plugins: [
-    basicSsl()
-  ],
   build: {
     rollupOptions: {
       input: {
@@ -22,6 +24,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    https: {}
+    https: {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    }
   }
 });
