@@ -126,3 +126,35 @@ npm run build
   CheckNetIsolation LoopbackExempt -a -n="Microsoft.Win32WebViewHost_cw5n1h2txyewy"
   ```
 - **Hàm Custom Functions báo lỗi `#VALUE!`**: Hãy chắc chắn rằng bạn đã mở Sidebar Task Pane của Add-in ít nhất một lần để khởi tạo Shared Runtime và nạp các khóa bảo mật cần thiết từ LocalStorage.
+
+---
+
+## 🐞 Hướng Dẫn Debug Trên VS Code
+
+Để thực hiện debug mã nguồn TypeScript (đặt Breakpoint, theo dõi luồng dữ liệu) trực tiếp trong VS Code:
+
+### Bước 1: Khởi động Dev Server
+Chạy lệnh sau tại terminal của VS Code để khởi chạy máy chủ phát triển (Vite):
+```bash
+npm run dev
+```
+
+### Bước 2: Tải Add-in lên Excel
+- Thực hiện sideload Add-in theo một trong hai cách hướng dẫn ở trên (Excel Online hoặc Excel Desktop).
+- Mở Sidebar Task Pane của Add-in lên để tiến trình WebView bắt đầu chạy.
+
+### Bước 3: Cấu hình Debug trên VS Code
+Tôi đã tạo sẵn tệp cấu hình [.vscode/launch.json](file:///D:/Dev/Source%20Code/excel-ai-addin/.vscode/launch.json).
+
+#### Trường hợp A: Debug trên Excel Desktop (Windows)
+Excel Desktop sử dụng nhân Edge Chromium (WebView2). Theo mặc định, WebView2 sẽ mở cổng debug từ xa tại cổng `9222`.
+1. Trong VS Code, chuyển sang tab **Run and Debug** (Ctrl+Shift+D).
+2. Chọn cấu hình **"Attach to Excel Desktop (Edge Chromium)"** từ danh sách thả xuống.
+3. Bấm nút **Start Debugging (F5)**.
+4. Giờ đây bạn đã có thể đặt Breakpoint trực tiếp trong các tệp `.ts` (ví dụ: [taskpane.ts](file:///D:/Dev/Source%20Code/excel-ai-addin/taskpane.ts) hoặc [functions.ts](file:///D:/Dev/Source%20Code/excel-ai-addin/functions.ts)) và gọi các tính năng trên Excel để debug.
+
+#### Trường hợp B: Debug trên Excel Online (Trình duyệt Chrome)
+1. Trong tab **Run and Debug** của VS Code, chọn cấu hình **"Launch Excel Online in Chrome"**.
+2. Bấm **F5** để khởi chạy trình duyệt Chrome được kết nối với VS Code.
+3. Sideload tệp `manifest.xml` vào Excel Online và tiến hành debug như bình thường.
+
