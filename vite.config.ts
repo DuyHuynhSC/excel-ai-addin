@@ -56,8 +56,25 @@ class DynamicAgent extends https.Agent {
 
   constructor(pUrl: string | undefined) {
     super({ keepAlive: true, rejectUnauthorized: false });
-    this.proxyAgent = pUrl ? new HttpsProxyAgent(pUrl) : null;
     this.directAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
+    
+    if (pUrl) {
+      try {
+        const parsed = new URL(pUrl);
+        this.proxyAgent = new HttpsProxyAgent({
+          protocol: parsed.protocol,
+          host: parsed.hostname,
+          port: parsed.port,
+          auth: parsed.username && parsed.password ? `${parsed.username}:${parsed.password}` : undefined,
+          rejectUnauthorized: false // Bỏ qua kiểm tra chứng chỉ tự ký của proxy công ty khi kết nối ngoài
+        });
+      } catch (e) {
+        console.warn('Lỗi phân tích cú pháp proxyUrl, chuyển sang agent thô:', e);
+        this.proxyAgent = new HttpsProxyAgent(pUrl);
+      }
+    } else {
+      this.proxyAgent = null;
+    }
   }
 
   addRequest(req: any, options: any) {
