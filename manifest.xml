@@ -37,8 +37,6 @@
           <Runtime resid="Taskpane.Url" lifetime="long" />
         </Runtimes>
         
-        <AllFormulas />
-        
         <DesktopFormFactor>
           <!-- Cấu hình Ribbon Commands -->
           <ExtensionPoint xsi:type="PrimaryCommandSurface">
@@ -53,10 +51,10 @@
                 
                 <Control xsi:type="Button" id="ShowTaskpaneButton">
                   <Label resid="ShowTaskpane.Label" />
-                  <SuperTip>
+                  <Supertip>
                     <Title resid="ShowTaskpane.Label" />
                     <Description resid="ShowTaskpane.Tooltip" />
-                  </SuperTip>
+                  </Supertip>
                   <Icon>
                     <bt:Image size="16" resid="Icon.16" />
                     <bt:Image size="32" resid="Icon.32" />
@@ -79,6 +77,9 @@
             <Page>
               <SourceLocation resid="Taskpane.Url" />
             </Page>
+            <Metadata>
+              <SourceLocation resid="Functions.Metadata.Url" />
+            </Metadata>
             <Namespace resid="Functions.Namespace" />
           </ExtensionPoint>
         </DesktopFormFactor>
@@ -93,6 +94,7 @@
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html" />
+        <bt:Url id="Functions.Metadata.Url" DefaultValue="https://localhost:3000/functions.json" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupAI.Label" DefaultValue="Trợ Lý AI" />

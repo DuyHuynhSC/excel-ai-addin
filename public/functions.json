@@ -1,0 +1,103 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/office-js/custom-functions.schema.json",
+  "functions": [
+    {
+      "id": "TRANSLATE",
+      "name": "TRANSLATE",
+      "description": "Dịch một ô dữ liệu văn bản sang ngôn ngữ mong muốn trực tiếp trong ô Excel.",
+      "helpUrl": "https://localhost:3000/help",
+      "parameters": [
+        {
+          "name": "text",
+          "description": "Nội dung văn bản cần dịch.",
+          "type": "string"
+        },
+        {
+          "name": "targetLang",
+          "description": "Ngôn ngữ cần dịch sang (ví dụ: Tiếng Anh, Tiếng Việt).",
+          "type": "string"
+        },
+        {
+          "name": "sourceLang",
+          "description": "Ngôn ngữ của văn bản gốc (mặc định: Auto).",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "string"
+      }
+    },
+    {
+      "id": "SUMMARIZE",
+      "name": "SUMMARIZE",
+      "description": "Tóm tắt văn bản trực tiếp trong ô Excel.",
+      "helpUrl": "https://localhost:3000/help",
+      "parameters": [
+        {
+          "name": "text",
+          "description": "Nội dung văn bản cần tóm tắt.",
+          "type": "string"
+        },
+        {
+          "name": "format",
+          "description": "Định dạng đầu ra: 'paragraph' hoặc 'bullets'.",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "length",
+          "description": "Độ dài tóm tắt: 'concise' hoặc 'detailed'.",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "string"
+      }
+    },
+    {
+      "id": "ANALYZE",
+      "name": "ANALYZE",
+      "description": "Phân tích nội dung ô dữ liệu Excel.",
+      "helpUrl": "https://localhost:3000/help",
+      "parameters": [
+        {
+          "name": "text",
+          "description": "Nội dung cần phân tích.",
+          "type": "string"
+        },
+        {
+          "name": "focusArea",
+          "description": "Lĩnh vực phân tích: 'general', 'sentiment', hoặc 'entities'.",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "result": {
+        "type": "string"
+      }
+    },
+    {
+      "id": "ASK",
+      "name": "ASK",
+      "description": "Thực thi một câu lệnh/yêu cầu tự chọn của bạn lên ô dữ liệu được cung cấp.",
+      "helpUrl": "https://localhost:3000/help",
+      "parameters": [
+        {
+          "name": "prompt",
+          "description": "Câu hỏi hoặc yêu cầu xử lý (Ví dụ: Viết lại dưới dạng thơ).",
+          "type": "string"
+        },
+        {
+          "name": "contextText",
+          "description": "Nội dung ô dữ liệu làm ngữ cảnh.",
+          "type": "string"
+        }
+      ],
+      "result": {
+        "type": "string"
+      }
+    }
+  ]
+}
