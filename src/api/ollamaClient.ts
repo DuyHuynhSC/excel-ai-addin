@@ -27,10 +27,10 @@ export class OllamaClient {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
       });
-      return response.ok;
+      if (response.ok) return true;
+      throw new Error(`Ollama trả về status ${response.status}`);
     } catch (e) {
-      console.warn('Lỗi kết nối tới Ollama:', e);
-      return false;
+      throw new Error(`Ollama connection failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 

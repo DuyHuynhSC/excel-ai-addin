@@ -513,31 +513,31 @@ async function runHealthCheck() {
     const config = loadConfig();
 
     if (config.activeService === 'custom') {
-      if (health.custom) {
+      if (health.custom.ok) {
         dot.className = 'connection-status-dot online';
         dot.title = 'Custom API Gateway: Sẵn sàng';
-      } else if (config.fallbackEnabled && health.ollama) {
+      } else if (config.fallbackEnabled && health.ollama.ok) {
         dot.className = 'connection-status-dot warning';
-        dot.title = 'Custom API Lỗi -> Đã chuyển dự phòng sang Ollama';
+        dot.title = `Custom API Lỗi: ${health.custom.error} -> Đã chuyển dự phòng sang Ollama`;
       } else {
         dot.className = 'connection-status-dot offline';
-        dot.title = 'Custom API Mất kết nối!';
+        dot.title = `Custom API Mất kết nối! Chi tiết: ${health.custom.error}`;
       }
     } else {
-      if (health.ollama) {
+      if (health.ollama.ok) {
         dot.className = 'connection-status-dot online';
         dot.title = 'Ollama Local: Sẵn sàng';
-      } else if (config.fallbackEnabled && health.custom) {
+      } else if (config.fallbackEnabled && health.custom.ok) {
         dot.className = 'connection-status-dot warning';
-        dot.title = 'Ollama Lỗi -> Đã chuyển dự phòng sang Custom API';
+        dot.title = `Ollama Lỗi: ${health.ollama.error} -> Đã chuyển dự phòng sang Custom API`;
       } else {
         dot.className = 'connection-status-dot offline';
-        dot.title = 'Ollama Local Mất kết nối!';
+        dot.title = `Ollama Local Mất kết nối! Chi tiết: ${health.ollama.error}`;
       }
     }
-  } catch {
+  } catch (err) {
     dot.className = 'connection-status-dot offline';
-    dot.title = 'Không thể kiểm tra trạng thái kết nối!';
+    dot.title = `Không thể kiểm tra trạng thái kết nối! Lỗi: ${err instanceof Error ? err.message : String(err)}`;
   }
 }
 

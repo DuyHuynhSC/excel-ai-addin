@@ -177,26 +177,43 @@ export class ApiFactory {
   /**
    * Kiểm tra tình trạng kết nối của cả hai dịch vụ
    */
-  async checkHealth(): Promise<{ ollama: boolean; custom: boolean }> {
-    const ollamaPromise = this.ollamaClient.testConnection();
-    
-    const client = await this.getCustomClient();
-    const customPromise = client
-      ? client.testConnection()
-      : Promise.resolve(false);
+  async checkHealth(): Promise<{ 
+    ollama: { ok: boolean; error?: string }; 
+    custom: { ok: boolean; error?: string }; 
+  }> {
+    const checkOllama = async () => {
+      try {
+        const ok = await this.ollamaClient.testConnection();
+        return { ok };
+      } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : String(e) };
+      }
+    };
+
+    const checkCustom = async () => {
+      const client = await this.getCustomClient();
+      if (!client) {
+        return { ok: false, error: 'Chưa cấu hình API Key hoặc lỗi giải mã khóa.' };
+      }
+      try {
+        const ok = await client.testConnection();
+        return { ok };
+      } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : String(e) };
+      }
+    };
 
     // Timeout kết nối là 15 giây
     const timeoutPromise = (serviceName: string) =>
-      new Promise<boolean>(resolve =>
+      new Promise<{ ok: boolean; error: string }>(resolve =>
         setTimeout(() => {
-          console.warn(`Kiểm tra kết nối ${serviceName} bị quá thời gian (15 giây).`);
-          resolve(false);
+          resolve({ ok: false, error: `Kết nối tới ${serviceName} bị quá thời gian (15 giây).` });
         }, 15000)
       );
 
     const [ollamaResult, customResult] = await Promise.all([
-      Promise.race([ollamaPromise, timeoutPromise('Ollama')]),
-      Promise.race([customPromise, timeoutPromise('Custom API')])
+      Promise.race([checkOllama(), timeoutPromise('Ollama')]),
+      Promise.race([checkCustom(), timeoutPromise('Custom API')])
     ]);
 
     return {

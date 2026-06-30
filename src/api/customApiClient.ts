@@ -24,6 +24,9 @@ export class CustomApiClient {
    * Thường gọi một endpoint nhỏ như lấy danh sách model.
    */
   async testConnection(): Promise<boolean> {
+    const errors: string[] = [];
+    
+    // Thử thách 1: Gọi thử endpoint /models
     try {
       const response = await fetch(`${this.baseUrl}/models`, {
         method: 'GET',
@@ -32,11 +35,38 @@ export class CustomApiClient {
           'Accept': 'application/json'
         },
       });
-      return response.ok;
+      if (response.ok) return true;
+      errors.push(`/models trả về status ${response.status}`);
     } catch (e) {
-      console.warn('Lỗi kết nối tới Custom API:', e);
-      return false;
+      errors.push(`Gọi /models thất bại: ${e instanceof Error ? e.message : String(e)}`);
     }
+
+    // Thử thách 2: Dự phòng gọi thử /chat/completions với cấu hình tối thiểu
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'ping' }],
+          max_tokens: 1
+        })
+      });
+      if (response.ok) return true;
+
+      // Nếu trả về lỗi khác 401/403 (ví dụ 404 model not found) tức là key vẫn đúng và kết nối được
+      if (response.status !== 401 && response.status !== 403) {
+        return true;
+      }
+      errors.push(`/chat/completions trả về status ${response.status}`);
+    } catch (e) {
+      errors.push(`Gọi /chat/completions thất bại: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    throw new Error(errors.join(' | '));
   }
 
   /**
