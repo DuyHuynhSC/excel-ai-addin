@@ -35,6 +35,7 @@ export interface AppConfig {
   customApiKey: string; // encrypted
   activeService: 'ollama' | 'custom';
   fallbackEnabled: boolean;
+  streamingEnabled: boolean;
   models: {
     translation: string;
     analysis: string;

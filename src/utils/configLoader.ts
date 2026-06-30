@@ -6,6 +6,7 @@ const DEFAULT_CONFIG: AppConfig = {
   customApiKey: import.meta.env.VITE_CUSTOM_API_KEY || '',
   activeService: 'ollama',
   fallbackEnabled: true,
+  streamingEnabled: true,
   models: {
     translation: import.meta.env.VITE_MODEL_TRANSLATION || 'phi:2b',
     analysis: import.meta.env.VITE_MODEL_ANALYSIS || 'llama2:7b-chat',

@@ -84,6 +84,7 @@ function setupSettingsForm(config: AppConfig) {
   const inputCustomUrl = document.getElementById('setting-custom-url') as HTMLInputElement;
   const inputCustomKey = document.getElementById('setting-custom-key') as HTMLInputElement;
   const checkFallback = document.getElementById('setting-fallback') as HTMLInputElement;
+  const checkStreaming = document.getElementById('setting-streaming') as HTMLInputElement;
 
   const modelTranslation = document.getElementById('model-translation') as HTMLInputElement;
   const modelAnalysis = document.getElementById('model-analysis') as HTMLInputElement;
@@ -99,6 +100,7 @@ function setupSettingsForm(config: AppConfig) {
   inputOllamaUrl.value = config.ollamaUrl;
   inputCustomUrl.value = config.customApiUrl;
   checkFallback.checked = config.fallbackEnabled;
+  checkStreaming.checked = config.streamingEnabled;
 
   modelTranslation.value = config.models.translation;
   modelAnalysis.value = config.models.analysis;
@@ -127,6 +129,7 @@ function setupSettingsForm(config: AppConfig) {
         customApiKey: customApiKey,
         activeService: activeService as 'ollama' | 'custom',
         fallbackEnabled: checkFallback.checked,
+        streamingEnabled: checkStreaming.checked,
         models: {
           translation: modelTranslation.value.trim() || 'phi:2b',
           analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
@@ -175,6 +178,7 @@ function setupSettingsForm(config: AppConfig) {
         customApiKey: customApiKey,
         activeService: activeService as 'ollama' | 'custom',
         fallbackEnabled: checkFallback.checked,
+        streamingEnabled: checkStreaming.checked,
         models: {
           translation: modelTranslation.value.trim() || 'phi:2b',
           analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
@@ -226,13 +230,14 @@ function setupTaskActions() {
       const targetLang = (document.getElementById('translate-target') as HTMLSelectElement).value;
       const toneInput = document.querySelector('input[name="translate-tone"]:checked') as HTMLInputElement;
       const tone = (toneInput?.value || 'neutral') as 'formal' | 'informal' | 'neutral';
+      const config = loadConfig();
 
       return await translationService.translate({
         text,
         sourceLang,
         targetLang,
         tone,
-        stream: true,
+        stream: config.streamingEnabled,
         onChunk,
         signal
       });
@@ -244,12 +249,13 @@ function setupTaskActions() {
     executeTask('analysis', async (text, signal, onChunk) => {
       const focusArea = (document.getElementById('analyze-focus') as HTMLSelectElement).value as 'general' | 'sentiment' | 'entities' | 'data_cleanup';
       const customInstructions = (document.getElementById('analyze-custom') as HTMLTextAreaElement).value.trim();
+      const config = loadConfig();
 
       return await analysisService.analyze({
         text,
         focusArea,
         customInstructions: customInstructions || undefined,
-        stream: true,
+        stream: config.streamingEnabled,
         onChunk,
         signal
       });
@@ -262,12 +268,13 @@ function setupTaskActions() {
       const format = (document.getElementById('summarize-format') as HTMLSelectElement).value as 'paragraph' | 'bullets' | 'key_actions';
       const lengthInput = document.querySelector('input[name="summarize-length"]:checked') as HTMLInputElement;
       const length = (lengthInput?.value || 'concise') as 'concise' | 'detailed';
+      const config = loadConfig();
 
       return await summarizationService.summarize({
         text,
         format,
         length,
-        stream: true,
+        stream: config.streamingEnabled,
         onChunk,
         signal
       });
