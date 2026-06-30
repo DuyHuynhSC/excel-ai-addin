@@ -20,20 +20,51 @@ export class CustomApiClient {
   }
 
   /**
+   * Định tuyến URL để vượt qua lỗi CORS bằng Vite Proxy khi chạy ở môi trường phát triển (localhost:3000)
+   */
+  private getRequestUrl(endpointPath: string): string {
+    const cleanPath = endpointPath.replace(/^\//, '');
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+
+    // Nếu chạy trên localhost:3000 và URL đích trỏ tới một máy chủ ngoài khác origin,
+    // tự động định tuyến thông qua proxy /api-proxy của Vite
+    if (currentOrigin.includes('localhost:3000') && !this.baseUrl.startsWith(currentOrigin)) {
+      return `${currentOrigin}/api-proxy/${cleanPath}`;
+    }
+    
+    return `${this.baseUrl}/${cleanPath}`;
+  }
+
+  /**
+   * Tạo headers yêu cầu kèm đính kèm địa chỉ đích thực tế X-Target-Url khi đi qua proxy
+   */
+  private getHeaders(extraHeaders: Record<string, string> = {}): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${this.apiKey}`,
+      'Accept': 'application/json',
+      ...extraHeaders
+    };
+
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    if (currentOrigin.includes('localhost:3000') && !this.baseUrl.startsWith(currentOrigin)) {
+      headers['X-Target-Url'] = this.baseUrl;
+    }
+
+    return headers;
+  }
+
+  /**
    * Kiểm tra kết nối tới Custom API.
-   * Thường gọi một endpoint nhỏ như lấy danh sách model.
+   * Thử nghiệm gọi /models và dự phòng tới /chat/completions.
    */
   async testConnection(): Promise<boolean> {
     const errors: string[] = [];
     
     // Thử thách 1: Gọi thử endpoint /models
     try {
-      const response = await fetch(`${this.baseUrl}/models`, {
+      const response = await fetch(this.getRequestUrl('models'), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Accept': 'application/json'
-        },
+        headers: this.getHeaders(),
       });
       if (response.ok) return true;
       errors.push(`/models trả về status ${response.status}`);
@@ -43,12 +74,9 @@ export class CustomApiClient {
 
     // Thử thách 2: Dự phòng gọi thử /chat/completions với cấu hình tối thiểu
     try {
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      const response = await fetch(this.getRequestUrl('chat/completions'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
+        headers: this.getHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: 'ping' }],
@@ -74,12 +102,9 @@ export class CustomApiClient {
    */
   async getModels(): Promise<string[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/models`, {
+      const response = await fetch(this.getRequestUrl('models'), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Accept': 'application/json'
-        },
+        headers: this.getHeaders(),
       });
       if (!response.ok) return [];
       const data = await response.json();
@@ -112,12 +137,9 @@ export class CustomApiClient {
       temperature: options.temperature ?? 0.7,
     };
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+    const response = await fetch(this.getRequestUrl('chat/completions'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
+      headers: this.getHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
       signal: options.signal,
     });
@@ -161,7 +183,6 @@ export class CustomApiClient {
                     options.onChunk(delta);
                   }
                 }
-                // Nếu API trả kèm thông tin token usage ở chunk cuối cùng
                 if (parsed.usage) {
                   inputTokens = parsed.usage.prompt_tokens ?? 0;
                   outputTokens = parsed.usage.completion_tokens ?? 0;

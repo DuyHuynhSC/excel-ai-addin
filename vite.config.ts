@@ -27,6 +27,21 @@ export default defineConfig({
     https: {
       key: fs.readFileSync(keyPath),
       cert: fs.readFileSync(certPath),
+    },
+    proxy: {
+      '/api-proxy': {
+        target: 'https://api.company.com/v1', // Giá trị mặc định dự phòng
+        changeOrigin: true,
+        secure: false, // Hỗ trợ bỏ qua kiểm tra chứng chỉ tự ký của gateway nội bộ
+        router: (req: any) => {
+          const targetHeader = req.headers['x-target-url'];
+          if (typeof targetHeader === 'string' && targetHeader.trim() !== '') {
+            return targetHeader;
+          }
+          return 'https://api.company.com/v1';
+        },
+        rewrite: (path: string) => path.replace(/^\/api-proxy/, ''),
+      } as any
     }
   }
 });
