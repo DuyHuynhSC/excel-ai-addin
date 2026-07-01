@@ -445,10 +445,39 @@ async function executeTask(
  * Thiết lập nhật ký hoạt động
  */
 function setupHistoryActions() {
-  document.getElementById('btn-clear-history')?.addEventListener('click', async () => {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ nhật ký lịch sử không?')) {
-      await historyService.clearHistory();
-      renderHistoryList();
+  const btnClear = document.getElementById('btn-clear-history') as HTMLButtonElement | null;
+  let confirmMode = false;
+  let confirmTimeout: number | null = null;
+
+  btnClear?.addEventListener('click', async () => {
+    if (!confirmMode) {
+      confirmMode = true;
+      btnClear.textContent = '⚠️ Xác nhận xóa?';
+      btnClear.style.color = 'var(--color-error)';
+      
+      confirmTimeout = window.setTimeout(() => {
+        confirmMode = false;
+        btnClear.textContent = 'Xóa lịch sử';
+        btnClear.style.color = '';
+      }, 4000);
+    } else {
+      if (confirmTimeout) {
+        window.clearTimeout(confirmTimeout);
+      }
+      confirmMode = false;
+      btnClear.textContent = 'Xóa lịch sử';
+      btnClear.style.color = '';
+      
+      try {
+        await historyService.clearHistory();
+        renderHistoryList();
+        showStatusOverlay('success', 'Đã xóa toàn bộ nhật ký lịch sử thành công!');
+        setTimeout(() => {
+          document.getElementById('status-panel')?.classList.add('hidden');
+        }, 1500);
+      } catch (err) {
+        showStatusOverlay('error', `Lỗi khi xóa lịch sử: ${err}`);
+      }
     }
   });
 }
@@ -597,13 +626,33 @@ function setupGlossaryActions() {
   });
 
   // 4. Xóa toàn bộ thuật ngữ
-  const btnClear = document.getElementById('btn-clear-glossary');
+  const btnClear = document.getElementById('btn-clear-glossary') as HTMLButtonElement | null;
+  let glossaryConfirmMode = false;
+  let glossaryConfirmTimeout: number | null = null;
+
   btnClear?.addEventListener('click', async () => {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ danh sách thuật ngữ chuyên ngành này không?')) {
+    if (!glossaryConfirmMode) {
+      glossaryConfirmMode = true;
+      btnClear.textContent = '⚠️ Xác nhận xóa toàn bộ?';
+      btnClear.style.color = 'var(--color-error)';
+      
+      glossaryConfirmTimeout = window.setTimeout(() => {
+        glossaryConfirmMode = false;
+        btnClear.textContent = 'Xóa toàn bộ';
+        btnClear.style.color = '';
+      }, 4000);
+    } else {
+      if (glossaryConfirmTimeout) {
+        window.clearTimeout(glossaryConfirmTimeout);
+      }
+      glossaryConfirmMode = false;
+      btnClear.textContent = 'Xóa toàn bộ';
+      btnClear.style.color = '';
+      
       try {
         await glossaryService.clearGlossary();
         renderGlossaryList();
-        showStatusOverlay('success', 'Đã xóa sạch bảng thuật ngữ!');
+        showStatusOverlay('success', 'Đã xóa toàn bộ thuật ngữ chuyên ngành thành công!');
         setTimeout(() => {
           document.getElementById('status-panel')?.classList.add('hidden');
         }, 1500);
