@@ -7,7 +7,7 @@
   xsi:type="TaskPaneApp">
   
   <Id>d53fa652-32a8-4c28-98e3-85f02be8d120</Id>
-  <Version>1.0.0.2</Version>
+  <Version>1.0.0.3</Version>
   <ProviderName>Internal Dev Team</ProviderName>
   <DefaultLocale>vi-VN</DefaultLocale>
   <DisplayName DefaultValue="Trợ Lý Excel AI" />
@@ -23,7 +23,7 @@
   </Hosts>
   
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane.html" />
+    <SourceLocation DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane" />
   </DefaultSettings>
   
   <Permissions>ReadWriteDocument</Permissions>
@@ -93,7 +93,7 @@
         <bt:Image id="Icon.80" DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-80.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane" />
         <bt:Url id="Functions.Metadata.Url" DefaultValue="https://excel-ai-addin-drab.vercel.app/functions.json" />
       </bt:Urls>
       <bt:ShortStrings>
