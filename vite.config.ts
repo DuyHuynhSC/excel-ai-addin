@@ -9,6 +9,7 @@ import * as https from 'https';
 const homedir = os.homedir();
 const certPath = resolve(homedir, '.office-addin-dev-certs/localhost.crt');
 const keyPath = resolve(homedir, '.office-addin-dev-certs/localhost.key');
+const certExists = fs.existsSync(certPath) && fs.existsSync(keyPath);
 
 const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.https_proxy || process.env.http_proxy;
 
@@ -112,10 +113,10 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    https: {
+    https: certExists ? {
       key: fs.readFileSync(keyPath),
       cert: fs.readFileSync(certPath),
-    },
+    } : undefined,
     proxy: {
       '/api-proxy': {
         target: 'https://models-gateway.fujinet.net/v1', // Giá trị mặc định dự phòng
