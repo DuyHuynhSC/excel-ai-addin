@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 import fs from 'fs';
 import os from 'os';

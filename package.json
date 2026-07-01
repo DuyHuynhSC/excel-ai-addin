@@ -19,7 +19,7 @@
     "https-proxy-agent": "^5.0.1",
     "proxy-agent": "^8.0.2",
     "typescript": "^5.3.3",
-    "vite": "^5.0.12",
-    "vitest": "^1.2.2"
+    "vite": "^8.1.2",
+    "vitest": "^4.1.9"
   }
 }
