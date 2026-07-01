@@ -131,9 +131,9 @@ function setupSettingsForm(config: AppConfig) {
         fallbackEnabled: checkFallback.checked,
         streamingEnabled: checkStreaming.checked,
         models: {
-          translation: modelTranslation.value.trim() || 'phi:2b',
-          analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
-          summarization: modelSummarization.value.trim() || 'mistral:7b',
+          translation: modelTranslation.value.trim() || 'translator',
+          analysis: modelAnalysis.value.trim() || 'translator',
+          summarization: modelSummarization.value.trim() || 'translator',
           custom: currentConfig.models.custom
         }
       };
@@ -180,9 +180,9 @@ function setupSettingsForm(config: AppConfig) {
         fallbackEnabled: checkFallback.checked,
         streamingEnabled: checkStreaming.checked,
         models: {
-          translation: modelTranslation.value.trim() || 'phi:2b',
-          analysis: modelAnalysis.value.trim() || 'llama2:7b-chat',
-          summarization: modelSummarization.value.trim() || 'mistral:7b',
+          translation: modelTranslation.value.trim() || 'translator',
+          analysis: modelAnalysis.value.trim() || 'translator',
+          summarization: modelSummarization.value.trim() || 'translator',
           custom: currentConfig.models.custom
         }
       };

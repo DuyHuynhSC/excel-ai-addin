@@ -2,16 +2,16 @@ import { AppConfig } from '../types';
 
 const DEFAULT_CONFIG: AppConfig = {
   ollamaUrl: import.meta.env.VITE_OLLAMA_API_URL || 'http://localhost:11434',
-  customApiUrl: import.meta.env.VITE_CUSTOM_API_URL || 'https://api.company.com/v1',
+  customApiUrl: import.meta.env.VITE_CUSTOM_API_URL || 'https://models-gateway.fujinet.net/v1',
   customApiKey: import.meta.env.VITE_CUSTOM_API_KEY || '',
-  activeService: 'ollama',
+  activeService: 'custom',
   fallbackEnabled: true,
   streamingEnabled: true,
   models: {
-    translation: import.meta.env.VITE_MODEL_TRANSLATION || 'phi:2b',
-    analysis: import.meta.env.VITE_MODEL_ANALYSIS || 'llama2:7b-chat',
-    summarization: import.meta.env.VITE_MODEL_SUMMARIZATION || 'mistral:7b',
-    custom: 'mistral:7b'
+    translation: import.meta.env.VITE_MODEL_TRANSLATION || 'translator',
+    analysis: import.meta.env.VITE_MODEL_ANALYSIS || 'translator',
+    summarization: import.meta.env.VITE_MODEL_SUMMARIZATION || 'translator',
+    custom: 'translator'
   }
 };
 
