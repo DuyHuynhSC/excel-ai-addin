@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "^26.0.1",
     "@types/office-js": "^1.0.97",
-    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
     "https-proxy-agent": "^5.0.1",
     "proxy-agent": "^8.0.2",
     "typescript": "^5.3.3",
