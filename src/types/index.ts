@@ -56,3 +56,9 @@ export interface HistoryItem {
   status: 'success' | 'error';
   errorMessage?: string;
 }
+
+export interface GlossaryItem {
+  japanese: string;
+  vietnamese: string;
+  note?: string;
+}

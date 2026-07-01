@@ -5,14 +5,16 @@ import { TranslationService } from './src/services/translationService';
 import { AnalysisService } from './src/services/analysisService';
 import { SummarizationService } from './src/services/summarizationService';
 import { HistoryService } from './src/services/historyService';
+import { GlossaryService } from './src/services/glossaryService';
 import { getSelectedCellsData, writeResultAdjacent, writeResultOverwrite, writeToSummariesSheet } from './src/utils/excelHelpers';
 import { loadConfig, saveConfig } from './src/utils/configLoader';
 import { encryptText } from './src/utils/cryptoUtils';
-import { AppConfig, HistoryItem, TaskType } from './src/types';
+import { AppConfig, GlossaryItem, HistoryItem, TaskType } from './src/types';
 
 // Các instances dịch vụ dùng chung trong Taskpane
 let apiFactory: ApiFactory;
 let historyService: HistoryService;
+let glossaryService: GlossaryService;
 let translationService: TranslationService;
 let analysisService: AnalysisService;
 let summarizationService: SummarizationService;
@@ -27,6 +29,7 @@ Office.onReady((info) => {
     const config = loadConfig();
     apiFactory = new ApiFactory(config);
     historyService = new HistoryService();
+    glossaryService = new GlossaryService();
     translationService = new TranslationService(apiFactory);
     analysisService = new AnalysisService(apiFactory);
     summarizationService = new SummarizationService(apiFactory);
@@ -45,6 +48,7 @@ function initUi(config: AppConfig) {
   setupSettingsForm(config);
   setupTaskActions();
   setupHistoryActions();
+  setupGlossaryActions();
   setupStatusPanel();
 }
 
@@ -69,6 +73,11 @@ function setupTabs() {
       // Tải lại lịch sử nếu mở Tab Lịch sử
       if (targetTab === 'tab-history') {
         renderHistoryList();
+      }
+
+      // Tải lại thuật ngữ nếu mở Tab Thuật ngữ
+      if (targetTab === 'tab-glossary') {
+        renderGlossaryList();
       }
     });
   });
@@ -487,6 +496,190 @@ async function renderHistoryList() {
     }).join('');
   } catch (err) {
     container.innerHTML = `<p class="history-empty" style="color: var(--color-error)">Không thể tải lịch sử: ${err}</p>`;
+  }
+}
+
+/**
+ * Thiết lập các sự kiện liên quan đến Thuật ngữ (Glossary)
+ */
+function setupGlossaryActions() {
+  // 1. Thêm thuật ngữ thủ công
+  const btnAdd = document.getElementById('btn-add-glossary');
+  btnAdd?.addEventListener('click', async () => {
+    const jpInput = document.getElementById('glossary-jp-input') as HTMLInputElement;
+    const vnInput = document.getElementById('glossary-vn-input') as HTMLInputElement;
+    const noteInput = document.getElementById('glossary-note-input') as HTMLInputElement;
+
+    const jp = jpInput.value.trim();
+    const vn = vnInput.value.trim();
+    const note = noteInput.value.trim();
+
+    if (!jp || !vn) {
+      showStatusOverlay('error', '⚠️ Vui lòng nhập đầy đủ từ gốc tiếng Nhật và bản dịch chuẩn tiếng Việt!');
+      return;
+    }
+
+    try {
+      await glossaryService.addGlossaryItem({ japanese: jp, vietnamese: vn, note: note || undefined });
+      jpInput.value = '';
+      vnInput.value = '';
+      noteInput.value = '';
+      
+      showStatusOverlay('success', `Đã thêm thuật ngữ: "${jp}" -> "${vn}"`);
+      setTimeout(() => {
+        document.getElementById('status-panel')?.classList.add('hidden');
+      }, 2000);
+
+      renderGlossaryList();
+    } catch (err) {
+      showStatusOverlay('error', `Lỗi khi lưu thuật ngữ: ${err}`);
+    }
+  });
+
+  // 2. Kích hoạt trigger chọn file import
+  const btnTriggerImport = document.getElementById('btn-trigger-file-import');
+  const fileInput = document.getElementById('glossary-file-input') as HTMLInputElement;
+  const fileNameDisplay = document.getElementById('glossary-file-name');
+
+  btnTriggerImport?.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // 3. Xử lý khi chọn file import
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    if (fileNameDisplay) fileNameDisplay.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      if (!content) return;
+
+      try {
+        let items: GlossaryItem[] = [];
+        const ext = file.name.split('.').pop()?.toLowerCase();
+
+        if (ext === 'json') {
+          items = glossaryService.parseJSON(content);
+        } else if (ext === 'csv') {
+          items = glossaryService.parseCSV(content);
+        } else if (ext === 'md') {
+          items = glossaryService.parseMarkdown(content);
+        } else {
+          showStatusOverlay('error', '⚠️ Chỉ hỗ trợ định dạng .json, .csv hoặc .md!');
+          return;
+        }
+
+        if (items.length === 0) {
+          showStatusOverlay('error', '⚠️ Không tìm thấy thuật ngữ nào hợp lệ trong tệp!');
+          return;
+        }
+
+        const count = await glossaryService.addGlossaryItems(items);
+        showStatusOverlay('success', `🎉 Import thành công ${count} thuật ngữ từ tệp "${file.name}"!`);
+        
+        fileInput.value = '';
+        if (fileNameDisplay) fileNameDisplay.textContent = 'Chưa chọn tệp';
+
+        renderGlossaryList();
+      } catch (err) {
+        showStatusOverlay('error', `Lỗi khi import file: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    };
+
+    reader.onerror = () => {
+      showStatusOverlay('error', 'Lỗi khi đọc tệp tin!');
+    };
+
+    reader.readAsText(file, 'UTF-8');
+  });
+
+  // 4. Xóa toàn bộ thuật ngữ
+  const btnClear = document.getElementById('btn-clear-glossary');
+  btnClear?.addEventListener('click', async () => {
+    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ danh sách thuật ngữ chuyên ngành này không?')) {
+      try {
+        await glossaryService.clearGlossary();
+        renderGlossaryList();
+        showStatusOverlay('success', 'Đã xóa sạch bảng thuật ngữ!');
+        setTimeout(() => {
+          document.getElementById('status-panel')?.classList.add('hidden');
+        }, 1500);
+      } catch (err) {
+        showStatusOverlay('error', `Lỗi khi xóa bảng thuật ngữ: ${err}`);
+      }
+    }
+  });
+}
+
+/**
+ * Hiển thị danh sách thuật ngữ ra giao diện
+ */
+async function renderGlossaryList() {
+  const tableBody = document.getElementById('glossary-table-body');
+  const countSpan = document.getElementById('glossary-count');
+  if (!tableBody) return;
+
+  try {
+    const list = await glossaryService.getGlossaryItems();
+    if (countSpan) countSpan.textContent = String(list.length);
+
+    if (list.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="3" style="padding: 16px; text-align: center; color: var(--color-text-muted);">
+            Chưa có thuật ngữ nào. Bạn hãy thêm thủ công hoặc import từ tệp tin (.json, .csv, .md).
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = list.map((item: GlossaryItem) => {
+      const escapedJp = escapeHtml(item.japanese);
+      const escapedVn = escapeHtml(item.vietnamese);
+      const noteHtml = item.note ? `<div style="font-size: 9px; color: var(--color-text-muted); margin-top: 2px;">* ${escapeHtml(item.note)}</div>` : '';
+
+      return `
+        <tr style="border-bottom: 1px solid var(--border-color); vertical-align: top;">
+          <td style="padding: 8px; font-weight: 500; color: #637ff9; word-break: break-all;">${escapedJp}</td>
+          <td style="padding: 8px; word-break: break-all;">
+            <div>${escapedVn}</div>
+            ${noteHtml}
+          </td>
+          <td style="padding: 8px; text-align: center; vertical-align: middle;">
+            <button class="btn-delete-term" data-jp="${escapedJp}" style="background: none; border: none; color: var(--color-error); cursor: pointer; font-size: 14px; padding: 2px 6px;">✕</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Đăng ký sự kiện xóa cho từng dòng
+    const deleteButtons = tableBody.querySelectorAll('.btn-delete-term');
+    deleteButtons.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const jpVal = (e.currentTarget as HTMLElement).getAttribute('data-jp');
+        if (jpVal) {
+          try {
+            await glossaryService.deleteGlossaryItem(jpVal);
+            renderGlossaryList();
+          } catch (err) {
+            showStatusOverlay('error', `Lỗi khi xóa thuật ngữ: ${err}`);
+          }
+        }
+      });
+    });
+
+  } catch (err) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="3" style="padding: 16px; text-align: center; color: var(--color-error);">
+          Không thể tải dữ liệu thuật ngữ: ${err}
+        </td>
+      </tr>
+    `;
   }
 }
 

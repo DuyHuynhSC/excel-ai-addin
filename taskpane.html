@@ -42,6 +42,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
         <span>Lịch sử</span>
       </button>
+      <button class="nav-tab" data-tab="tab-glossary" id="tab-btn-glossary">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+        <span>Thuật ngữ</span>
+      </button>
       <button class="nav-tab" data-tab="tab-settings" id="tab-btn-settings">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span>Cài đặt</span>
@@ -239,6 +243,69 @@
         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
           <button class="btn-secondary" id="btn-test-settings">Kiểm tra kết nối</button>
           <button class="btn-primary" id="btn-save-settings">Lưu cấu hình</button>
+        </div>
+      </section>
+
+      <!-- TAB: GLOSSARY -->
+      <section class="tab-pane" id="tab-glossary">
+        <div style="margin-bottom: 12px;">
+          <h3 style="margin-bottom: 4px; color: var(--color-primary); font-size: 15px;">Quản lý Thuật ngữ</h3>
+          <p style="font-size: 11px; color: var(--color-text-muted);">Định nghĩa quy chuẩn dịch thuật riêng cho doanh nghiệp (Nhật - Việt).</p>
+        </div>
+
+        <!-- Add Term Form -->
+        <div class="settings-collapsible" style="padding: 10px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(255,255,255,0.01);">
+          <h4 style="margin-bottom: 8px; font-size: 12px; text-transform: uppercase; color: var(--color-text-muted);">Thêm thuật ngữ mới</h4>
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label style="font-size: 9px; letter-spacing: 0.5px;">TIẾNG NHẬT (TỪ GỐC)</label>
+            <input type="text" id="glossary-jp-input" class="custom-input" placeholder="Ví dụ: 画面カスタマイズ">
+          </div>
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label style="font-size: 9px; letter-spacing: 0.5px;">TIẾNG VIỆT (BẢN DỊCH CHUẨN)</label>
+            <input type="text" id="glossary-vn-input" class="custom-input" placeholder="Ví dụ: Tùy biến màn hình">
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 9px; letter-spacing: 0.5px;">GHI CHÚ / NGỮ CẢNH (TÙY CHỌN)</label>
+            <input type="text" id="glossary-note-input" class="custom-input" placeholder="Ví dụ: Dùng cho nút chức năng">
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <button class="btn-primary" id="btn-add-glossary" style="padding: 6px 12px; font-size: 11px; width: auto; margin: 0; min-height: auto;">
+              <span>Thêm thuật ngữ</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Import Area -->
+        <div class="settings-collapsible" style="padding: 10px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(255,255,255,0.01);">
+          <h4 style="margin-bottom: 4px; font-size: 12px; text-transform: uppercase; color: var(--color-text-muted);">Import từ tệp tin</h4>
+          <p style="font-size: 10px; color: var(--color-text-muted); margin-bottom: 8px;">Hỗ trợ định dạng JSON, CSV hoặc Markdown (.md).</p>
+          <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
+            <input type="file" id="glossary-file-input" accept=".json,.csv,.md" style="display: none;">
+            <button class="btn-secondary" id="btn-trigger-file-import" style="padding: 6px 12px; font-size: 11px; margin: 0; width: auto; min-height: auto;">Chọn tệp tin</button>
+            <span id="glossary-file-name" style="font-size: 10px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; text-align: right;">Chưa chọn tệp</span>
+          </div>
+        </div>
+
+        <!-- Terms List Table -->
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 180px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <h4 style="font-size: 12px; text-transform: uppercase; color: var(--color-text-muted);">Danh sách thuật ngữ (<span id="glossary-count">0</span>)</h4>
+            <button id="btn-clear-glossary" style="background: none; border: none; color: var(--color-error); font-size: 10px; cursor: pointer; text-decoration: underline; padding: 0;">Xóa toàn bộ</button>
+          </div>
+          <div style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-card); max-height: 200px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+              <thead>
+                <tr style="background-color: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: #0c1221; z-index: 1;">
+                  <th style="padding: 6px 8px; width: 45%; color: var(--color-text-muted);">Tiếng Nhật</th>
+                  <th style="padding: 6px 8px; width: 45%; color: var(--color-text-muted);">Tiếng Việt</th>
+                  <th style="padding: 6px 8px; width: 10%; text-align: center; color: var(--color-text-muted);">Xóa</th>
+                </tr>
+              </thead>
+              <tbody id="glossary-table-body">
+                <!-- Thuật ngữ động -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

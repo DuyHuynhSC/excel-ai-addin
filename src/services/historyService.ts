@@ -3,12 +3,14 @@ import { HistoryItem } from '../types';
 export class HistoryService {
   private dbName = 'ExcelAiAddInDb';
   private storeName = 'history';
-  private dbVersion = 1;
+  private dbVersion = 2;
 
   constructor() {
-    this.initDb().catch(err => {
-      console.error('Không thể khởi tạo IndexedDB cho Lịch sử:', err);
-    });
+    if (typeof indexedDB !== 'undefined') {
+      this.initDb().catch(err => {
+        console.error('Không thể khởi tạo IndexedDB cho Lịch sử:', err);
+      });
+    }
   }
 
   /**
@@ -31,6 +33,9 @@ export class HistoryService {
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('glossary')) {
+          db.createObjectStore('glossary', { keyPath: 'japanese' });
         }
       };
     });
