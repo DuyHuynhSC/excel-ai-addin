@@ -21,5 +21,5 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "taskpane.ts", "functions.ts", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"]
 }

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import fs from 'fs';
@@ -92,10 +93,13 @@ class DynamicAgent extends https.Agent {
 const proxyAgent = new DynamicAgent(proxyUrl);
 
 export default defineConfig({
+  root: 'src',
+  publicDir: '../public',
+  envDir: '../',
   build: {
     rollupOptions: {
       input: {
-        taskpane: resolve(__dirname, 'taskpane.html'),
+        taskpane: resolve(__dirname, 'src/taskpane.html'),
       },
       output: {
         entryFileNames: '[name].js',
@@ -103,7 +107,7 @@ export default defineConfig({
         assetFileNames: '[name].[ext]',
       }
     },
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true,
   },
   server: {
@@ -141,5 +145,10 @@ export default defineConfig({
         }
       } as any
     }
+  },
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['../tests/**/*.test.ts'],
   }
 });

@@ -1,11 +1,11 @@
 /* global CustomFunctions */
 declare const CustomFunctions: any;
-import { ApiFactory } from './src/api/apiFactory';
-import { loadConfig } from './src/utils/configLoader';
-import { TranslationService } from './src/services/translationService';
-import { SummarizationService } from './src/services/summarizationService';
-import { AnalysisService } from './src/services/analysisService';
-import { validateInputText } from './src/utils/validators';
+import { ApiFactory } from './api/apiFactory';
+import { loadConfig } from './utils/configLoader';
+import { TranslationService } from './services/translationService';
+import { SummarizationService } from './services/summarizationService';
+import { AnalysisService } from './services/analysisService';
+import { validateInputText } from './utils/validators';
 
 // Khởi tạo ApiFactory dùng chung khi chạy custom functions
 let apiFactoryInstance: ApiFactory | null = null;

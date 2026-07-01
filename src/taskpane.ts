@@ -1,15 +1,15 @@
 /* global Office */
 import './functions'; // Đảm bảo custom functions được tải và đăng ký vào Shared Runtime
-import { ApiFactory } from './src/api/apiFactory';
-import { TranslationService } from './src/services/translationService';
-import { AnalysisService } from './src/services/analysisService';
-import { SummarizationService } from './src/services/summarizationService';
-import { HistoryService } from './src/services/historyService';
-import { GlossaryService } from './src/services/glossaryService';
-import { getSelectedCellsData, writeResultAdjacent, writeResultOverwrite, writeToSummariesSheet } from './src/utils/excelHelpers';
-import { loadConfig, saveConfig } from './src/utils/configLoader';
-import { encryptText } from './src/utils/cryptoUtils';
-import { AppConfig, GlossaryItem, HistoryItem, TaskType } from './src/types';
+import { ApiFactory } from './api/apiFactory';
+import { TranslationService } from './services/translationService';
+import { AnalysisService } from './services/analysisService';
+import { SummarizationService } from './services/summarizationService';
+import { HistoryService } from './services/historyService';
+import { GlossaryService } from './services/glossaryService';
+import { getSelectedCellsData, writeResultAdjacent, writeResultOverwrite, writeToSummariesSheet } from './utils/excelHelpers';
+import { loadConfig, saveConfig } from './utils/configLoader';
+import { encryptText } from './utils/cryptoUtils';
+import { AppConfig, GlossaryItem, HistoryItem, TaskType } from './types';
 
 // Các instances dịch vụ dùng chung trong Taskpane
 let apiFactory: ApiFactory;
