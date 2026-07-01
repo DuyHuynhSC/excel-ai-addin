@@ -1,5 +1,8 @@
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
+// Tắt xác thực chứng chỉ SSL để cho phép kết nối tới Gateway doanh nghiệp dùng chứng chỉ nội bộ/tự ký
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 module.exports = async (req, res) => {
   // Thiết lập CORS headers để cho phép các yêu cầu từ Excel Add-in (WebView2)
   res.setHeader('Access-Control-Allow-Credentials', 'true');
