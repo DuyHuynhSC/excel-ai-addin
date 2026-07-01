@@ -20,15 +20,15 @@ export class CustomApiClient {
   }
 
   /**
-   * Định tuyến URL để vượt qua lỗi CORS bằng Vite Proxy khi chạy ở môi trường phát triển (localhost:3000)
+   * Định tuyến URL để vượt qua lỗi CORS bằng cách sử dụng Proxy trung gian khi gọi server khác Origin
    */
   private getRequestUrl(endpointPath: string): string {
     const cleanPath = endpointPath.replace(/^\//, '');
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 
-    // Nếu chạy trên localhost:3000 và URL đích trỏ tới một máy chủ ngoài khác origin,
-    // tự động định tuyến thông qua proxy /api-proxy của Vite
-    if (currentOrigin.includes('localhost:3000') && !this.baseUrl.startsWith(currentOrigin)) {
+    // Nếu URL đích trỏ tới một máy chủ ngoài khác origin của giao diện Add-in,
+    // tự động định tuyến thông qua proxy /api-proxy (hỗ trợ cả Local Vite và Vercel Serverless)
+    if (currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
       return `${currentOrigin}/api-proxy/${cleanPath}`;
     }
     
@@ -46,7 +46,7 @@ export class CustomApiClient {
     };
 
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-    if (currentOrigin.includes('localhost:3000') && !this.baseUrl.startsWith(currentOrigin)) {
+    if (currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
       headers['X-Target-Url'] = this.baseUrl;
     }
 
