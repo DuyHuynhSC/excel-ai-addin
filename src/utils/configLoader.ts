@@ -23,6 +23,13 @@ export function loadConfig(): AppConfig {
     const savedConfigStr = localStorage.getItem('excel_ai_addin_config');
     if (savedConfigStr) {
       const parsed = JSON.parse(savedConfigStr);
+      
+      // Nếu địa chỉ lưu trong localStorage vẫn chứa placeholder mẫu,
+      // ưu tiên lấy địa chỉ thật mới được cấu hình từ tệp .env (DEFAULT_CONFIG)
+      if (parsed.customApiUrl && parsed.customApiUrl.includes('api.company.com')) {
+        parsed.customApiUrl = DEFAULT_CONFIG.customApiUrl;
+      }
+      
       return {
         ...DEFAULT_CONFIG,
         ...parsed,
