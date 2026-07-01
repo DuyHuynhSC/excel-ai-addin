@@ -29,14 +29,17 @@ Dự án sử dụng mô hình **Shared Runtime**, giúp giao diện Sidebar (Ta
 ```
 excel-ai-addin/
 ├── manifest.xml                     # Tệp cấu hình Add-in (Quyền hạn, Ribbon, Custom Functions)
-├── taskpane.html                    # Giao diện chính của Sidebar
-├── taskpane.css                     # Định dạng phong cách Dark Glassmorphism
-├── taskpane.ts                      # Xử lý sự kiện giao diện và tương tác với Excel
-├── functions.ts                     # Đăng ký và xử lý các hàm công thức Excel Custom Functions
+├── package.json                     # Quản lý thư viện phụ thuộc và kịch bản chạy
+├── vite.config.ts                   # Cấu hình đóng gói dự án Vite
+├── tsconfig.json                    # Cấu hình trình biên dịch TypeScript
 ├── public/                          # Thư mục chứa các tệp tĩnh được Vite copy sang dist
 │   ├── functions.json               # Siêu dữ liệu khai báo các hàm tự chọn Excel
 │   └── assets/                      # Chứa biểu tượng Add-in (16x16, 32x32, 80x80)
 ├── src/
+│   ├── taskpane.html                # Giao diện chính của Sidebar
+│   ├── taskpane.css                 # Định dạng phong cách Dark Glassmorphism
+│   ├── taskpane.ts                  # Xử lý sự kiện giao diện và tương tác với Excel
+│   ├── functions.ts                 # Đăng ký và xử lý các hàm công thức Excel Custom Functions
 │   ├── api/
 │   │   ├── ollamaClient.ts          # Tương tác với Ollama API (hỗ trợ streaming)
 │   │   ├── customApiClient.ts       # Tương tác với API Gateway tương thích OpenAI
@@ -59,10 +62,7 @@ excel-ai-addin/
 │   ├── cryptoUtils.test.ts          # Kiểm thử mã hóa/giải mã khóa
 │   ├── glossary.test.ts             # Kiểm thử bộ phân tích tệp Glossary (JSON, CSV, MD)
 │   └── apiClients.test.ts           # Kiểm thử mock gọi API
-├── .env.example                     # Mẫu biến môi trường cấu hình mặc định
-├── .gitignore                       # Cấu hình bỏ qua các tệp không cần đẩy lên Git
-├── package.json                     # Quản lý thư viện phụ thuộc và kịch bản chạy
-└── tsconfig.json                    # Cấu hình trình biên dịch TypeScript
+└── install.ps1                      # Script tự động cài đặt Add-in cho máy khách
 ```
 
 ---
