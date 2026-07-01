@@ -55,13 +55,18 @@ export async function writeResultAdjacent(
 ): Promise<void> {
   await Excel.run(async (context) => {
     const range = context.workbook.getSelectedRange();
-    // Lấy ô mục tiêu dựa trên offset tương đối
+    const sourceCell = range.getCell(relativeRow, relativeCol - 1);
     const targetCell = range.getCell(relativeRow, relativeCol);
-    targetCell.values = [[text]];
     
-    // Tự động định dạng wrap text cho dễ đọc
-    targetCell.format.wrapText = true;
-    targetCell.format.autofitRows();
+    // Sao chép định dạng từ ô nguồn sang ô mục tiêu
+    try {
+      targetCell.copyFrom(sourceCell, Excel.RangeCopyType.formats);
+    } catch (e) {
+      console.warn('Không thể sao chép định dạng:', e);
+    }
+    
+    // Ghi kết quả dịch
+    targetCell.values = [[text]];
     
     await context.sync();
   });
@@ -81,11 +86,9 @@ export async function writeResultOverwrite(
   await Excel.run(async (context) => {
     const range = context.workbook.getSelectedRange();
     const targetCell = range.getCell(relativeRow, relativeCol);
-    targetCell.values = [[text]];
     
-    // Tự động định dạng wrap text cho dễ đọc
-    targetCell.format.wrapText = true;
-    targetCell.format.autofitRows();
+    // Chỉ ghi đè giá trị, giữ nguyên hoàn toàn định dạng gốc của ô gốc
+    targetCell.values = [[text]];
     
     await context.sync();
   });
