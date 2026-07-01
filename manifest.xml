@@ -10,7 +10,7 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Internal Dev Team</ProviderName>
   <DefaultLocale>vi-VN</DefaultLocale>
-  <DisplayName DefaultValue="Trợ Lý Excel AI (Ollama)" />
+  <DisplayName DefaultValue="Trợ Lý Excel AI" />
   <Description DefaultValue="Tích hợp dịch thuật, tóm tắt và phân tích dữ liệu trực tiếp bằng mô hình ngôn ngữ lớn (LLM)." />
   
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
