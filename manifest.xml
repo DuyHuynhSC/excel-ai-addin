@@ -7,7 +7,7 @@
   xsi:type="TaskPaneApp">
   
   <Id>d53fa652-32a8-4c28-98e3-85f02be8d120</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.0.1</Version>
   <ProviderName>Internal Dev Team</ProviderName>
   <DefaultLocale>vi-VN</DefaultLocale>
   <DisplayName DefaultValue="Trợ Lý Excel AI" />
