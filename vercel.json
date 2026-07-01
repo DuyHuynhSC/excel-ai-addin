@@ -1,5 +1,10 @@
 {
+  "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/taskpane.html"
+    },
     {
       "source": "/api-proxy/:path*",
       "destination": "/api/proxy"
