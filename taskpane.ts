@@ -5,7 +5,7 @@ import { TranslationService } from './src/services/translationService';
 import { AnalysisService } from './src/services/analysisService';
 import { SummarizationService } from './src/services/summarizationService';
 import { HistoryService } from './src/services/historyService';
-import { getSelectedCellsData, writeResultAdjacent, writeToSummariesSheet } from './src/utils/excelHelpers';
+import { getSelectedCellsData, writeResultAdjacent, writeResultOverwrite, writeToSummariesSheet } from './src/utils/excelHelpers';
 import { loadConfig, saveConfig } from './src/utils/configLoader';
 import { encryptText } from './src/utils/cryptoUtils';
 import { AppConfig, HistoryItem, TaskType } from './src/types';
@@ -225,6 +225,9 @@ function setupSettingsForm(config: AppConfig) {
 function setupTaskActions() {
   // 1. Tác vụ Dịch thuật
   document.getElementById('btn-run-translate')?.addEventListener('click', () => {
+    const destInput = document.querySelector('input[name="translate-dest"]:checked') as HTMLInputElement;
+    const destType = destInput?.value || 'adjacent';
+
     executeTask('translation', async (text, signal, onChunk) => {
       const sourceLang = (document.getElementById('translate-source') as HTMLSelectElement).value;
       const targetLang = (document.getElementById('translate-target') as HTMLSelectElement).value;
@@ -241,6 +244,19 @@ function setupTaskActions() {
         onChunk,
         signal
       });
+    }, async (_sourceText: string, result: string, _model: string, cellInfo: { row: number; col: number }) => {
+      if (destType === 'overwrite') {
+        // Ghi đè trực tiếp vào ô gốc đang chọn
+        await writeResultOverwrite(cellInfo.row, cellInfo.col, result);
+        return 'Đã dịch đè vào ô đang chọn.';
+      } else if (destType === 'taskpane') {
+        // Chỉ hiển thị kết quả trên Sidebar Taskpane
+        return 'Đã hoàn thành dịch thuật hiển thị trên Taskpane.';
+      } else {
+        // Ghi vào ô bên cạnh cột kế tiếp
+        await writeResultAdjacent(cellInfo.row, cellInfo.col + 1, result);
+        return 'Đã điền kết quả dịch vào cột kế bên.';
+      }
     });
   });
 
@@ -296,7 +312,7 @@ function setupTaskActions() {
 async function executeTask(
   taskType: TaskType,
   apiCall: (text: string, signal: AbortSignal, onChunk: (chunk: string) => void) => Promise<{ result: string; model: string; processingTime: number }>,
-  customWriteResult?: (sourceText: string, result: string, model: string) => Promise<string | null>
+  customWriteResult?: (sourceText: string, result: string, model: string, cellInfo: { row: number; col: number }) => Promise<string | null>
 ) {
   // Hủy tiến trình trước đó nếu có
   if (currentAbortController) {
@@ -326,12 +342,14 @@ async function executeTask(
     for (let i = 0; i < selectedCells.length; i += maxConcurrency) {
       const chunk = selectedCells.slice(i, i + maxConcurrency);
       const promises = chunk.map(async (cell, index) => {
+        let accumulatedText = '';
         const onChunkCallback = (textChunk: string) => {
           // Hiển thị tiến trình stream thời gian thực của ô đầu tiên trong chunk lên bảng Panel
           if (index === 0) {
             const streamEl = document.getElementById('stream-output-content');
             if (streamEl) {
-              streamEl.textContent += textChunk;
+              accumulatedText += textChunk;
+              streamEl.innerHTML = markdownToHtml(accumulatedText);
               streamEl.scrollTop = streamEl.scrollHeight; // Auto scroll xuống cuối
             }
           }
@@ -340,7 +358,7 @@ async function executeTask(
         // Reset khung hiển thị stream
         if (index === 0) {
           const streamEl = document.getElementById('stream-output-content');
-          if (streamEl) streamEl.textContent = '';
+          if (streamEl) streamEl.innerHTML = '';
         }
 
         const response = await apiCall(cell.value, signal, onChunkCallback);
@@ -348,9 +366,9 @@ async function executeTask(
         let writeMessage = '';
         let targetWritten = false;
 
-        // Nếu có xử lý ghi kết quả tùy chỉnh (như lưu sheet tóm tắt)
+        // Nếu có xử lý ghi kết quả tùy chỉnh (như lưu sheet tóm tắt, dịch đè, dịch vào taskpane)
         if (customWriteResult) {
-          const customMsg = await customWriteResult(cell.value, response.result, response.model);
+          const customMsg = await customWriteResult(cell.value, response.result, response.model, { row: cell.row, col: cell.col });
           if (customMsg) {
             writeMessage = customMsg;
             targetWritten = true;
@@ -489,6 +507,29 @@ function cleanErrorMessage(msg: string): string {
     return msg.replace('PROXY_CONNECTION_ERROR', 'Lỗi kết nối từ Add-in Proxy tới Server đích');
   }
   return msg;
+}
+
+function markdownToHtml(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .split(/\n\n+/).map(para => {
+      const trimmed = para.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        const items = trimmed.split(/\n[*-] /).map(item => `<li>${item.replace(/^[*-] /, '')}</li>`).join('');
+        return `<ul>${items}</ul>`;
+      }
+      if (/^\d+\.\s/.test(trimmed)) {
+        const items = trimmed.split(/\n\d+\.\s/).map(item => `<li>${item.replace(/^\d+\.\s/, '')}</li>`).join('');
+        return `<ol>${items}</ol>`;
+      }
+      return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+    }).join('')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
 }
 
 /**

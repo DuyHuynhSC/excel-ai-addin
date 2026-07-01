@@ -88,6 +88,20 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label>Nơi ghi kết quả</label>
+          <div class="tone-toggle-group">
+            <input type="radio" id="dest-adjacent" name="translate-dest" value="adjacent" checked>
+            <label for="dest-adjacent">Ô kế bên</label>
+
+            <input type="radio" id="dest-overwrite" name="translate-dest" value="overwrite">
+            <label for="dest-overwrite">Ghi đè</label>
+
+            <input type="radio" id="dest-taskpane" name="translate-dest" value="taskpane">
+            <label for="dest-taskpane">Taskpane</label>
+          </div>
+        </div>
+
         <button class="btn-primary" id="btn-run-translate">
           <span>Dịch ô đang chọn</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg>

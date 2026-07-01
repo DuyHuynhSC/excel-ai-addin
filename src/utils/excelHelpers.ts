@@ -68,6 +68,30 @@ export async function writeResultAdjacent(
 }
 
 /**
+ * Ghi đè kết quả xử lý vào chính ô được chọn
+ * @param relativeRow Khoảng cách dòng tương đối
+ * @param relativeCol Khoảng cách cột tương đối
+ * @param text Văn bản kết quả cần ghi đè vào
+ */
+export async function writeResultOverwrite(
+  relativeRow: number,
+  relativeCol: number,
+  text: string
+): Promise<void> {
+  await Excel.run(async (context) => {
+    const range = context.workbook.getSelectedRange();
+    const targetCell = range.getCell(relativeRow, relativeCol);
+    targetCell.values = [[text]];
+    
+    // Tự động định dạng wrap text cho dễ đọc
+    targetCell.format.wrapText = true;
+    targetCell.format.autofitRows();
+    
+    await context.sync();
+  });
+}
+
+/**
  * Ghi kết quả tóm tắt vào một trang tính riêng mang tên "Summaries".
  * Nếu trang tính chưa tồn tại thì tự động tạo mới kèm dòng tiêu đề đẹp đẽ.
  * @param sourceText Văn bản gốc tóm tắt

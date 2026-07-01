@@ -114,7 +114,7 @@ export default defineConfig({
     },
     proxy: {
       '/api-proxy': {
-        target: 'https://api.company.com/v1', // Giá trị mặc định dự phòng
+        target: 'https://models-gateway.fujinet.net/v1', // Giá trị mặc định dự phòng
         changeOrigin: true,
         secure: false, // Hỗ trợ bỏ qua kiểm tra chứng chỉ tự ký của gateway nội bộ
         agent: proxyAgent, // Định tuyến qua proxy hoặc đi trực tiếp động
@@ -123,7 +123,7 @@ export default defineConfig({
           if (typeof targetHeader === 'string' && targetHeader.trim() !== '') {
             return targetHeader;
           }
-          return 'https://api.company.com/v1';
+          return 'https://models-gateway.fujinet.net/v1';
         },
         rewrite: (path: string) => path.replace(/^\/api-proxy/, ''),
         configure: (proxy: any) => {
@@ -135,7 +135,7 @@ export default defineConfig({
             res.end(`PROXY_CONNECTION_ERROR: ${err.message}`);
           });
           proxy.on('proxyReq', (_proxyReq: any, req: any, _res: any) => {
-            const targetUrl = req.headers['x-target-url'] || 'https://api.company.com/v1';
+            const targetUrl = req.headers['x-target-url'] || 'https://models-gateway.fujinet.net/v1';
             console.log(`[Proxy Request] ${req.method} ${req.url} -> Target: ${targetUrl}`);
           });
         }
