@@ -25,10 +25,13 @@ module.exports = async (req, res) => {
 
   try {
     const headers = {};
-    // Sao chép các headers từ client, lọc bỏ host và x-target-url
+    // Chỉ chuyển tiếp các headers cần thiết cho API từ client, tránh chuyển các header trình duyệt tự sinh
+    // như Origin, Referer, Accept-Encoding hay Cookie có thể làm lỗi Gateway hoặc vi phạm chính sách bảo mật
+    const allowedRequestHeaders = ['authorization', 'content-type', 'accept'];
     Object.keys(req.headers).forEach(key => {
-      if (key !== 'host' && key !== 'x-target-url') {
-        headers[key] = req.headers[key];
+      const lowerKey = key.toLowerCase();
+      if (allowedRequestHeaders.includes(lowerKey)) {
+        headers[lowerKey] = req.headers[key];
       }
     });
 
@@ -48,16 +51,14 @@ module.exports = async (req, res) => {
       headers: headers,
       body: bodyContent,
       agent: agent
-    } as any);
-
-    // Truyền tải status code và headers trả về từ server đích
-    res.status(response.status);
-    response.headers.forEach((value, key) => {
-      const lowerKey = key.toLowerCase();
-      if (lowerKey !== 'access-control-allow-origin' && lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding') {
-        res.setHeader(key, value);
-      }
     });
+
+    // Truyền tải status code và CHỈ chuyển tiếp header Content-Type từ server đích
+    res.status(response.status);
+    const contentType = response.headers.get('content-type');
+    if (contentType) {
+      res.setHeader('Content-Type', contentType);
+    }
 
     const responseText = await response.text();
     res.send(responseText);
