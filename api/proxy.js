@@ -67,6 +67,7 @@ module.exports = async (req, res) => {
     res.send(responseText);
   } catch (error) {
     console.error('[Vercel Proxy Error]:', error);
-    res.status(500).send(`PROXY_ERROR: ${error.message}`);
+    const causeStr = error.cause ? (error.cause.message || String(error.cause)) : 'none';
+    res.status(500).send(`PROXY_ERROR: ${error.message} (Cause: ${causeStr}) - Stack: ${error.stack}`);
   }
 };
