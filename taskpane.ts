@@ -478,6 +478,16 @@ function setupStatusPanel() {
 /**
  * Cập nhật giao diện Trạng thái
  */
+function cleanErrorMessage(msg: string): string {
+  if (msg.includes('PROXY_CONNECTION_ERROR')) {
+    return msg.replace('PROXY_CONNECTION_ERROR', 'Lỗi kết nối từ Add-in Proxy tới Server đích');
+  }
+  return msg;
+}
+
+/**
+ * Cập nhật giao diện Trạng thái
+ */
 function showStatusOverlay(status: 'pending' | 'success' | 'error', text: string) {
   const panel = document.getElementById('status-panel');
   const spinner = document.getElementById('status-spinner');
@@ -486,18 +496,19 @@ function showStatusOverlay(status: 'pending' | 'success' | 'error', text: string
   if (!panel) return;
 
   panel.classList.remove('hidden');
+  const cleanedText = cleanErrorMessage(text);
 
   if (status === 'pending') {
     spinner?.classList.remove('hidden');
-    if (statusTxt) statusTxt.textContent = text;
+    if (statusTxt) statusTxt.textContent = cleanedText;
     panel.style.borderTopColor = 'var(--color-primary)';
   } else if (status === 'success') {
     spinner?.classList.add('hidden');
-    if (statusTxt) statusTxt.textContent = text;
+    if (statusTxt) statusTxt.textContent = cleanedText;
     panel.style.borderTopColor = 'var(--color-success)';
   } else {
     spinner?.classList.add('hidden');
-    if (statusTxt) statusTxt.textContent = text;
+    if (statusTxt) statusTxt.textContent = cleanedText;
     panel.style.borderTopColor = 'var(--color-error)';
   }
 }
@@ -525,10 +536,10 @@ async function runHealthCheck() {
         dot.title = 'Custom API Gateway: Sẵn sàng';
       } else if (config.fallbackEnabled && health.ollama.ok) {
         dot.className = 'connection-status-dot warning';
-        dot.title = `Custom API Lỗi: ${health.custom.error} -> Đã chuyển dự phòng sang Ollama`;
+        dot.title = `Custom API Lỗi: ${cleanErrorMessage(health.custom.error || '')} -> Đã chuyển dự phòng sang Ollama`;
       } else {
         dot.className = 'connection-status-dot offline';
-        dot.title = `Custom API Mất kết nối! Chi tiết: ${health.custom.error}`;
+        dot.title = `Custom API Mất kết nối! Chi tiết: ${cleanErrorMessage(health.custom.error || '')}`;
       }
     } else {
       if (health.ollama.ok) {
@@ -536,15 +547,16 @@ async function runHealthCheck() {
         dot.title = 'Ollama Local: Sẵn sàng';
       } else if (config.fallbackEnabled && health.custom.ok) {
         dot.className = 'connection-status-dot warning';
-        dot.title = `Ollama Lỗi: ${health.ollama.error} -> Đã chuyển dự phòng sang Custom API`;
+        dot.title = `Ollama Lỗi: ${cleanErrorMessage(health.ollama.error || '')} -> Đã chuyển dự phòng sang Custom API`;
       } else {
         dot.className = 'connection-status-dot offline';
-        dot.title = `Ollama Local Mất kết nối! Chi tiết: ${health.ollama.error}`;
+        dot.title = `Ollama Local Mất kết nối! Chi tiết: ${cleanErrorMessage(health.ollama.error || '')}`;
       }
     }
   } catch (err) {
     dot.className = 'connection-status-dot offline';
-    dot.title = `Không thể kiểm tra trạng thái kết nối! Lỗi: ${err instanceof Error ? err.message : String(err)}`;
+    const errMsg = err instanceof Error ? err.message : String(err);
+    dot.title = `Không thể kiểm tra trạng thái kết nối! Lỗi: ${cleanErrorMessage(errMsg)}`;
   }
 }
 

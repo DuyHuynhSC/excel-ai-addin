@@ -132,7 +132,7 @@ export default defineConfig({
             res.writeHead(500, {
               'Content-Type': 'text/plain; charset=utf-8',
             });
-            res.end(`Lỗi kết nối từ Add-in Proxy tới Server đích: ${err.message}`);
+            res.end(`PROXY_CONNECTION_ERROR: ${err.message}`);
           });
           proxy.on('proxyReq', (_proxyReq: any, req: any, _res: any) => {
             const targetUrl = req.headers['x-target-url'] || 'https://api.company.com/v1';
