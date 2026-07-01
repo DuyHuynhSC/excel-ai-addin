@@ -306,6 +306,12 @@ async function executeTask(
   currentAbortController = new AbortController();
   const signal = currentAbortController.signal;
 
+  const config = loadConfig();
+  if (config.activeService === 'custom' && config.customApiUrl.includes('api.company.com')) {
+    showStatusOverlay('error', '⚠️ Bạn chưa cấu hình địa chỉ API thật của doanh nghiệp! Vui lòng vào tab Cài đặt, thay thế địa chỉ mẫu "api.company.com" bằng địa chỉ máy chủ API thực tế của bạn, rồi nhấn Lưu cấu hình.');
+    return;
+  }
+
   showStatusOverlay('pending', '⏳ Đang đọc ô dữ liệu được chọn...');
 
   try {
