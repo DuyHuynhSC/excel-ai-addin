@@ -36,6 +36,7 @@ export interface AppConfig {
   activeService: 'ollama' | 'custom';
   fallbackEnabled: boolean;
   streamingEnabled: boolean;
+  customApiProxyDisabled: boolean;
   models: {
     translation: string;
     analysis: string;

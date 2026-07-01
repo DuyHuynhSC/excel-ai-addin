@@ -94,6 +94,7 @@ function setupSettingsForm(config: AppConfig) {
   const inputCustomKey = document.getElementById('setting-custom-key') as HTMLInputElement;
   const checkFallback = document.getElementById('setting-fallback') as HTMLInputElement;
   const checkStreaming = document.getElementById('setting-streaming') as HTMLInputElement;
+  const checkProxyDisabled = document.getElementById('setting-custom-proxy-disabled') as HTMLInputElement;
 
   const modelTranslation = document.getElementById('model-translation') as HTMLInputElement;
   const modelAnalysis = document.getElementById('model-analysis') as HTMLInputElement;
@@ -110,6 +111,9 @@ function setupSettingsForm(config: AppConfig) {
   inputCustomUrl.value = config.customApiUrl;
   checkFallback.checked = config.fallbackEnabled;
   checkStreaming.checked = config.streamingEnabled;
+  if (checkProxyDisabled) {
+    checkProxyDisabled.checked = !!config.customApiProxyDisabled;
+  }
 
   modelTranslation.value = config.models.translation;
   modelAnalysis.value = config.models.analysis;
@@ -139,6 +143,7 @@ function setupSettingsForm(config: AppConfig) {
         activeService: activeService as 'ollama' | 'custom',
         fallbackEnabled: checkFallback.checked,
         streamingEnabled: checkStreaming.checked,
+        customApiProxyDisabled: checkProxyDisabled ? checkProxyDisabled.checked : false,
         models: {
           translation: modelTranslation.value.trim() || 'translator',
           analysis: modelAnalysis.value.trim() || 'translator',
@@ -188,6 +193,7 @@ function setupSettingsForm(config: AppConfig) {
         activeService: activeService as 'ollama' | 'custom',
         fallbackEnabled: checkFallback.checked,
         streamingEnabled: checkStreaming.checked,
+        customApiProxyDisabled: checkProxyDisabled ? checkProxyDisabled.checked : false,
         models: {
           translation: modelTranslation.value.trim() || 'translator',
           analysis: modelAnalysis.value.trim() || 'translator',

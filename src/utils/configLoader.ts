@@ -7,6 +7,7 @@ const DEFAULT_CONFIG: AppConfig = {
   activeService: 'custom',
   fallbackEnabled: true,
   streamingEnabled: true,
+  customApiProxyDisabled: false,
   models: {
     translation: import.meta.env.VITE_MODEL_TRANSLATION || 'translator',
     analysis: import.meta.env.VITE_MODEL_ANALYSIS || 'translator',

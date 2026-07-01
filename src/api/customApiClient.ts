@@ -13,10 +13,12 @@ export interface CustomApiGenerateOptions {
 export class CustomApiClient {
   private baseUrl: string;
   private apiKey: string;
+  private proxyDisabled: boolean;
 
-  constructor(baseUrl: string, apiKey: string) {
+  constructor(baseUrl: string, apiKey: string, proxyDisabled: boolean = false) {
     this.baseUrl = baseUrl.replace(/\/$/, '');
     this.apiKey = apiKey;
+    this.proxyDisabled = proxyDisabled;
   }
 
   /**
@@ -28,7 +30,7 @@ export class CustomApiClient {
 
     // Nếu URL đích trỏ tới một máy chủ ngoài khác origin của giao diện Add-in,
     // tự động định tuyến thông qua proxy /api-proxy (hỗ trợ cả Local Vite và Vercel Serverless)
-    if (currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
+    if (!this.proxyDisabled && currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
       return `${currentOrigin}/api-proxy/${cleanPath}`;
     }
     
@@ -46,7 +48,7 @@ export class CustomApiClient {
     };
 
     const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-    if (currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
+    if (!this.proxyDisabled && currentOrigin && !this.baseUrl.startsWith(currentOrigin)) {
       headers['X-Target-Url'] = this.baseUrl;
     }
 

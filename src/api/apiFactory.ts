@@ -28,7 +28,7 @@ export class ApiFactory {
       try {
         const decryptedKey = await decryptText(this.config.customApiKey);
         if (decryptedKey) {
-          this.customApiClient = new CustomApiClient(this.config.customApiUrl, decryptedKey);
+          this.customApiClient = new CustomApiClient(this.config.customApiUrl, decryptedKey, this.config.customApiProxyDisabled);
         } else {
           this.customApiClient = null;
         }
