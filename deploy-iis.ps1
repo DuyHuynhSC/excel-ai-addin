@@ -52,12 +52,6 @@ $rootStore1.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::Read
 $rootStore1.Add($cert)
 $rootStore1.Close()
 
-# Them vao Trusted Root CAs cua CurrentUser (Trust for Current User)
-$rootStore2 = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "CurrentUser")
-$rootStore2.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-$rootStore2.Add($cert)
-$rootStore2.Close()
-
 # 5. Khoi tao Website tren IIS (Initialize Website on IIS)
 Import-Module WebAdministration
 $siteName = "ExcelAIAddin"
