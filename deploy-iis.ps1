@@ -43,15 +43,22 @@ if (!(Test-Path $physicalPath)) {
 # 4. Tao hoac lien ket chung chi SSL tu ky (Create Self-Signed Cert)
 Write-Host "Dang tao chung chi SSL tu ky cho localhost va 172.16.2.17... (Creating SSL Certificate...)"
 # Xoa cac chung chi cu de tranh rac store
-Get-ChildItem -Path cert:\LocalMachine\My, cert:\LocalMachine\Root -ErrorAction SilentlyContinue | Where-Object { $_.FriendlyName -eq "Excel AI Addin Localhost" } | Remove-Item -Force -ErrorAction SilentlyContinue
+Get-ChildItem -Path cert:\LocalMachine\My, cert:\LocalMachine\Root, cert:\CurrentUser\Root -ErrorAction SilentlyContinue | Where-Object { $_.FriendlyName -eq "Excel AI Addin Localhost" } | Remove-Item -Force -ErrorAction SilentlyContinue
 
-$cert = New-SelfSignedCertificate -DnsName "localhost", "172.16.2.17" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost"
+# Tao chung chi voi khai bao dang IP Address cho SAN (Subject Alternative Name) de Chrome/Edge tin cay
+$cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost" -TextExtension @("2.5.29.17={text}dns=localhost&ipaddress=172.16.2.17")
 
-# Them vao Trusted Root CAs (Trust the certificate)
-$rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
-$rootStore.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-$rootStore.Add($cert)
-$rootStore.Close()
+# Them vao Trusted Root CAs cua LocalMachine (Trust for Machine)
+$rootStore1 = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
+$rootStore1.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+$rootStore1.Add($cert)
+$rootStore1.Close()
+
+# Them vao Trusted Root CAs cua CurrentUser (Trust for Current User)
+$rootStore2 = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "CurrentUser")
+$rootStore2.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+$rootStore2.Add($cert)
+$rootStore2.Close()
 
 # 5. Khoi tao Website tren IIS (Initialize Website on IIS)
 Import-Module WebAdministration
