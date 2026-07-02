@@ -1,92 +1,105 @@
-# Script tự động triển khai và cấu hình Excel Add-in lên máy chủ IIS (Windows)
-# Yêu cầu chạy bằng quyền Administrator (Run as Administrator)
+# Script tu dong trien khai va cau hinh Excel Add-in len may chu IIS (Windows)
+# Script to automatically deploy and configure Excel Add-in on IIS (Windows)
+# Yeu cau chay bang quyen Administrator (Run as Administrator)
 
 $ErrorActionPreference = "Stop"
 
-# Thiết lập mã hóa UTF-8 để hiển thị tiếng Việt Unicode sắc nét trên console
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
-# 1. Kiểm tra quyền Administrator
+# 1. Kiem tra quyen Administrator (Check Administrator privileges)
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (!$isAdmin) {
-    Write-Error "Script này cần chạy dưới quyền Administrator để cấu hình IIS. Vui lòng mở lại PowerShell với quyền Run as Administrator!"
+    Write-Error "Script nay can chay duoi quyen Administrator de cau hinh IIS! (Please run as Administrator!)"
     Exit
 }
 
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "      TIẾN TRÌNH TRIỂN KHAI ADD-IN LÊN IIS (WINDOWS)" -ForegroundColor Green
+Write-Host "      TIEN TRINH TRIEN KHAI ADD-IN LEN IIS (WINDOWS)" -ForegroundColor Green
+Write-Host "      IIS DEPLOYMENT PROCESS" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 
-# 2. Kiểm tra và kích hoạt IIS nếu chưa bật
-Write-Host "Kiểm tra tính năng IIS..."
+# 2. Kiem tra va kich hoa IIS (Enable IIS features)
+Write-Host "Kiem tra tinh nang IIS... (Checking IIS features...)"
 $iisFeature = Get-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole"
 if ($iisFeature.State -ne "Enabled") {
-    Write-Host "Đang bật tính năng IIS Web Server..." -ForegroundColor Yellow
+    Write-Host "Dang bat tinh nang IIS Web Server... (Enabling IIS Web Server...)" -ForegroundColor Yellow
     Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All -NoRestart | Out-Null
 }
-# Bật thêm tính năng IIS Management Console
 Get-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerManagementTools" | ForEach-Object {
     if ($_.State -ne "Enabled") {
         Enable-WindowsOptionalFeature -Online -FeatureName $_.FeatureName -All -NoRestart | Out-Null
     }
 }
 
-# 3. Biên dịch dự án (Vite Build)
-Write-Host "Đang chạy biên dịch đóng gói dự án (npm run build)..."
+# 3. Bien dich du cach (Vite Build)
+Write-Host "Dang chay bien dich dong goi du an... (Running npm run build...)"
 $currentDir = Get-Location
 npm run build
 
 $physicalPath = Join-Path $currentDir "dist"
 if (!(Test-Path $physicalPath)) {
-    Write-Error "Không tìm thấy thư mục dist sau khi build. Vui lòng kiểm tra lại quá trình biên dịch!"
+    Write-Error "Khong tim thay thu muc dist sau khi build! (dist folder not found!)"
     Exit
 }
 
-# 4. Tạo hoặc liên kết chứng chỉ SSL tự ký cho HTTPS
-Write-Host "Đang tạo chứng chỉ SSL tự ký cho địa chỉ localhost..."
+# 4. Tao hoac lien ket chung chi SSL tu ky (Create Self-Signed Cert)
+Write-Host "Dang tao chung chi SSL tu ky cho localhost... (Creating SSL Certificate...)"
 $cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost"
 
-# Thêm chứng chỉ vào Trusted Root CAs để trình duyệt/Excel tin cậy không báo lỗi bảo mật
+# Them vao Trusted Root CAs (Trust the certificate)
 $rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
 $rootStore.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
 $rootStore.Add($cert)
 $rootStore.Close()
 
-# 5. Khởi tạo Website trên IIS
+# 5. Khoi tao Website tren IIS (Initialize Website on IIS)
 Import-Module WebAdministration
 $siteName = "ExcelAIAddin"
-$port = 4433  # Cổng HTTPS thử nghiệm tránh xung đột cổng 443 mặc định
+$port = 4433  # Cong HTTPS thu nghiem
+$tempHttpPort = 8084 # Cong HTTP tam thoi dung de khoi tao Website
 
-# Kiểm tra nếu site cũ tồn tại thì xóa đi để làm mới
+# Kiem tra neu site cu ton tai thi xoa di (Delete old site if exists)
 if (Get-Website -Name $siteName -ErrorAction SilentlyContinue) {
-    Write-Host "Đang cập nhật lại Website $siteName cũ trên IIS..."
+    Write-Host "Dang cap nhat lai Website $siteName cu tren IIS... (Replacing old website...)"
     Remove-Website -Name $siteName | Out-Null
 }
 
-Write-Host "Đang cấu hình website mới trên IIS (Cổng $port, đường dẫn: $physicalPath)..."
-New-Website -Name $siteName -PhysicalPath $physicalPath -Port $port -Protocol "https" -Ssl -Thumbprint $cert.Thumbprint | Out-Null
+Write-Host "Dang cau hinh website moi tren IIS... (Configuring IIS Website...)"
+# Khoi tao website voi HTTP tren cong tam thoi de tranh xung dot va tranh loi tham so 'Protocol'
+New-Website -Name $siteName -PhysicalPath $physicalPath -Port $tempHttpPort -Force | Out-Null
 
-# Cấu hình quyền truy cập thư mục cho IIS AppPool
+# Them lien ket HTTPS tren cong $port (4433)
+New-WebBinding -Name $siteName -IPAddress "*" -Port $port -Protocol "https" -Force | Out-Null
+
+# Xoa lien ket HTTP tam thoi
+Get-WebBinding -Name $siteName -Port $tempHttpPort | Remove-WebBinding -Force | Out-Null
+
+# Gan chung chi SSL vao cong HTTPS
+$sslBindingPath = "IIS:\SslBindings\0.0.0.0!$port"
+if (Test-Path $sslBindingPath) {
+    Remove-Item $sslBindingPath -Force | Out-Null
+}
+Get-Item "cert:\LocalMachine\My\$($cert.Thumbprint)" | New-Item $sslBindingPath | Out-Null
+
+# Cau hinh quyen truy cap thu muc cho IIS AppPool (Folder permissions)
 $acl = Get-Acl $physicalPath
 $rule = New-Object System.Security.AccessControl.FileSystemAccessRule("IIS_IUSRS", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
 $acl.AddAccessRule($rule)
 Set-Acl $physicalPath $acl
 
-# 6. Hướng dẫn cài đặt cấu hình bổ trợ
+# 6. Huong dan cau hinh bo tro (Next steps guide)
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "TRIỂN KHAI THÀNH CÔNG LÊN IIS!" -ForegroundColor Green
-Write-Host "Đường dẫn Add-in của bạn: https://localhost:$port/taskpane" -ForegroundColor Green
+Write-Host "TRIEN KHAI THANH CONG LEN IIS! (IIS DEPLOYMENT SUCCESSFUL!)" -ForegroundColor Green
+Write-Host "Add-in URL: https://localhost:$port/taskpane" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "⚠️ LƯU Ý QUAN TRỌNG ĐỂ REVERSE PROXY HOẠT ĐỘNG:" -ForegroundColor Yellow
-Write-Host "Để tính năng điều hướng tránh lỗi CORS (Reverse Proxy) chạy được trên IIS, bạn cần:"
-Write-Host "1. Tải và cài đặt URL REWRITE:"
+Write-Host "LUU Y QUAN TRONG DE REVERSE PROXY HOAT DONG:" -ForegroundColor Yellow
+Write-Host "IMPORTANT NOTES FOR REVERSE PROXY OPERATION:" -ForegroundColor Yellow
+Write-Host "1. Tai va cai dat URL REWRITE (Install URL REWRITE):"
 Write-Host "   https://www.iis.net/downloads/microsoft/url-rewrite"
-Write-Host "2. Tải và cài đặt APPLICATION REQUEST ROUTING (ARR):"
+Write-Host "2. Tai va cai dat APPLICATION REQUEST ROUTING (ARR) (Install ARR):"
 Write-Host "   https://www.iis.net/downloads/microsoft/application-request-routing"
-Write-Host "3. Mở IIS Manager -> Chọn Server Name -> Vào mục 'Application Request Routing Cache'"
-Write-Host "   -> Nhấp 'Server Proxy Settings' ở cột bên phải -> Tích chọn 'Enable proxy' -> Nhấn 'Apply'."
+Write-Host "3. Mo IIS Manager -> Server Name -> Application Request Routing Cache"
+Write-Host "   -> Server Proxy Settings -> Tich chon 'Enable proxy' -> Apply."
 Write-Host "----------------------------------------------------------"
-Write-Host "4. Sau đó, cập nhật tệp manifest.xml của bạn để trỏ về địa chỉ IIS mới:"
-Write-Host "   Thay thế các link https://excel-ai-addin-drab.vercel.app thành https://localhost:$port"
+Write-Host "4. Cap nhat manifest.xml (Update manifest.xml):"
+Write-Host "   Thay the https://excel-ai-addin-drab.vercel.app thanh https://localhost:$port"
 Write-Host "==========================================================" -ForegroundColor Green
-Read-Host "Nhấn phím Enter để hoàn tất..."
+Read-Host "Nhan phim Enter de hoan tat... (Press Enter to complete...)"

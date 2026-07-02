@@ -1,50 +1,46 @@
-# Script tự động cài đặt / đăng ký Excel Add-in vào Excel Desktop (Windows)
-# Chạy script này bằng cách click chuột phải và chọn "Run with PowerShell"
+# Script tu dong cai dat / dang ky Excel Add-in vao Excel Desktop (Windows)
+# Script to automatically install / register Excel Add-in to Excel Desktop (Windows)
 
 $ErrorActionPreference = "Stop"
 
-# Thiết lập mã hóa UTF-8 để hiển thị tiếng Việt Unicode sắc nét trên console
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-
-# 1. Xác định thư mục chứa manifest.xml
+# 1. Xac dinh thu muc chua manifest.xml (Find manifest.xml)
 $currentDir = Get-Location
 $manifestPath = Join-Path $currentDir "manifest.xml"
 
 if (!(Test-Path $manifestPath)) {
-    Write-Error "Không tìm thấy tệp manifest.xml trong thư mục hiện tại. Vui lòng đặt script này trong cùng thư mục với manifest.xml!"
+    Write-Error "Khong tim thay tep manifest.xml trong thu muc hien tai! (manifest.xml not found!)"
     Exit
 }
 
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "   TIẾN TRÌNH CÀI ĐẶT / ĐĂNG KÝ TRỢ LÝ EXCEL AI" -ForegroundColor Green
+Write-Host "   TIEN TRINH CAI DAT / DANG KY TRO LY EXCEL AI" -ForegroundColor Green
+Write-Host "   EXCEL AI ADD-IN INSTALLATION PROCESS" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "Thư mục chứa manifest: $currentDir"
+Write-Host "Folder path: $currentDir"
 
-# 2. Đăng ký thư mục tin cậy (Trusted Catalog) trong Windows Registry cho Excel
+# 2. Dang ky thu muc tin cay (Trusted Catalog) trong Windows Registry (Register Trusted Catalog)
 $registryPath = "HKCU:\Software\Microsoft\Office\16.0\Wef\TrustedCatalogs"
 
-# Tạo khóa WEF nếu chưa tồn tại
 if (!(Test-Path $registryPath)) {
     New-Item -Path $registryPath -Force | Out-Null
 }
 
-# Tạo một GUID ngẫu nhiên để làm định danh cho Catalog này
 $guid = [Guid]::NewGuid().ToString("B")
 $newCatalogPath = Join-Path $registryPath $guid
 
-Write-Host "Đang tạo đăng ký Registry cho Excel Trusted Catalog..."
+Write-Host "Dang tao dang ky Registry cho Excel... (Configuring Registry...)"
 New-Item -Path $newCatalogPath -Force | Out-Null
 New-ItemProperty -Path $newCatalogPath -Name "Url" -Value $currentDir -PropertyType "String" -Force | Out-Null
 New-ItemProperty -Path $newCatalogPath -Name "Flags" -Value 1 -PropertyType "DWord" -Force | Out-Null
 New-ItemProperty -Path $newCatalogPath -Name "Id" -Value $guid -PropertyType "String" -Force | Out-Null
 
-Write-Host "Đăng ký thành công!" -ForegroundColor Green
+Write-Host "Dang ky thanh cong! (Registration successful!)" -ForegroundColor Green
 Write-Host "----------------------------------------------------------"
-Write-Host "ĐĂNG KÝ HOÀN TẤT. VUI LÒNG THỰC HIỆN CÁC BƯỚC SAU TRÊN EXCEL:" -ForegroundColor Yellow
-Write-Host "1. Mở Microsoft Excel (nếu đang mở thì tắt đi mở lại)."
-Write-Host "2. Vào tab Insert (Chèn) -> Chọn My Add-ins (Tiện ích bổ sung của tôi)."
-Write-Host "3. Chọn tab SHARED FOLDER (Thư mục dùng chung) ở trên cùng."
-Write-Host "4. Bạn sẽ thấy 'Trợ Lý Excel AI' xuất hiện tại đây. Nhấp chọn và bấm 'Add' (Thêm)."
-Write-Host "5. Tab 'Trợ Lý AI' sẽ hiển thị trên thanh công cụ của bạn!"
+Write-Host "VUI LONG THUC HIEN CAC BUOC SAU TREN EXCEL:" -ForegroundColor Yellow
+Write-Host "PLEASE FOLLOW THESE STEPS IN EXCEL:" -ForegroundColor Yellow
+Write-Host "1. Khoi dong lai Microsoft Excel (Close and reopen Excel)."
+Write-Host "2. Vao tab Insert -> My Add-ins (Tien ich bo sung cua toi)."
+Write-Host "3. Chon tab SHARED FOLDER (Thu muc dung chung) o tren cung."
+Write-Host "4. Chon 'Tro Ly Excel AI' va bam 'Add' (Them)."
 Write-Host "==========================================================" -ForegroundColor Green
-Read-Host "Nhấn phím Enter để kết thúc..."
+Read-Host "Nhan phim Enter de ket thuc... (Press Enter to finish...)"
