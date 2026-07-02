@@ -41,8 +41,11 @@ if (!(Test-Path $physicalPath)) {
 }
 
 # 4. Tao hoac lien ket chung chi SSL tu ky (Create Self-Signed Cert)
-Write-Host "Dang tao chung chi SSL tu ky cho localhost... (Creating SSL Certificate...)"
-$cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost"
+Write-Host "Dang tao chung chi SSL tu ky cho localhost va 172.16.2.17... (Creating SSL Certificate...)"
+# Xoa cac chung chi cu de tranh rac store
+Get-ChildItem -Path cert:\LocalMachine\My, cert:\LocalMachine\Root -ErrorAction SilentlyContinue | Where-Object { $_.FriendlyName -eq "Excel AI Addin Localhost" } | Remove-Item -Force -ErrorAction SilentlyContinue
+
+$cert = New-SelfSignedCertificate -DnsName "localhost", "172.16.2.17" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost"
 
 # Them vao Trusted Root CAs (Trust the certificate)
 $rootStore = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root", "LocalMachine")
