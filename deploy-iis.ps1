@@ -82,7 +82,13 @@ $null = netsh http delete sslcert ipport=0.0.0.0:$port 2>&1
 $thumbprint = $cert.Thumbprint
 $appid = "{d53fa652-32a8-4c28-98e3-85f02be8d120}"
 $null = netsh http add sslcert ipport=0.0.0.0:$port certhash=$thumbprint appid=$appid
-
+# Cau hinh IIS ARR khong giu lai Host Header cua client (tuong duong changeOrigin: true cua Vite) de tranh loi 403/404 tu Gateway
+Write-Host "Cau hinh IIS ARR khong giu Host Header... (Configuring IIS ARR proxy...)"
+try {
+    $null = & "$env:windir\system32\inetsrv\appcmd.exe" set config -section:system.webServer/proxy /preserveHostHeader:"False" /commit:apphost 2>&1
+} catch {
+    Write-Host "Luu y: Khong the thiet lap preserveHostHeader tren IIS, bo qua... (Skipping ARR host header config...)"
+}
 # Cau hinh quyen truy cap thu muc cho IIS AppPool va User An danh (IUSR) de tranh loi 401.3
 $acl = Get-Acl $physicalPath
 $rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule("IIS_IUSRS", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
