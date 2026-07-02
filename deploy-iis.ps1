@@ -81,10 +81,12 @@ $thumbprint = $cert.Thumbprint
 $appid = "{d53fa652-32a8-4c28-98e3-85f02be8d120}"
 $null = netsh http add sslcert ipport=0.0.0.0:$port certhash=$thumbprint appid=$appid
 
-# Cau hinh quyen truy cap thu muc cho IIS AppPool (Folder permissions)
+# Cau hinh quyen truy cap thu muc cho IIS AppPool va User An danh (IUSR) de tranh loi 401.3
 $acl = Get-Acl $physicalPath
-$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("IIS_IUSRS", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
-$acl.AddAccessRule($rule)
+$rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule("IIS_IUSRS", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$rule2 = New-Object System.Security.AccessControl.FileSystemAccessRule("IUSR", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule1)
+$acl.AddAccessRule($rule2)
 Set-Acl $physicalPath $acl
 
 # 6. Huong dan cau hinh bo tro (Next steps guide)
