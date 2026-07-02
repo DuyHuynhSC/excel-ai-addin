@@ -70,14 +70,16 @@ New-Website -Name $siteName -PhysicalPath $physicalPath -Port $tempHttpPort -For
 New-WebBinding -Name $siteName -IPAddress "*" -Port $port -Protocol "https" -Force | Out-Null
 
 # Xoa lien ket HTTP tam thoi
-Get-WebBinding -Name $siteName -Port $tempHttpPort | Remove-WebBinding -Force | Out-Null
+Get-WebBinding -Name $siteName -Port $tempHttpPort | Remove-WebBinding -Confirm:$false | Out-Null
 
-# Gan chung chi SSL vao cong HTTPS
-$sslBindingPath = "IIS:\SslBindings\0.0.0.0!$port"
-if (Test-Path $sslBindingPath) {
-    Remove-Item $sslBindingPath -Force | Out-Null
-}
-Get-Item "cert:\LocalMachine\My\$($cert.Thumbprint)" | New-Item $sslBindingPath | Out-Null
+# Gan chung chi SSL vao cong HTTPS bang netsh de tuong thich ca PowerShell 7 va 5.1
+Write-Host "Gan chung chi SSL vao cong $port bang netsh... (Binding SSL certificate...)"
+# Xoa binding cu tren cong nay neu co de tranh loi da ton tai
+$null = netsh http delete sslcert ipport=0.0.0.0:$port 2>&1
+# Them binding moi
+$thumbprint = $cert.Thumbprint
+$appid = "{d53fa652-32a8-4c28-98e3-85f02be8d120}"
+$null = netsh http add sslcert ipport=0.0.0.0:$port certhash=$thumbprint appid=$appid
 
 # Cau hinh quyen truy cap thu muc cho IIS AppPool (Folder permissions)
 $acl = Get-Acl $physicalPath
