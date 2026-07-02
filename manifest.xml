@@ -7,23 +7,23 @@
   xsi:type="TaskPaneApp">
   
   <Id>d53fa652-32a8-4c28-98e3-85f02be8d120</Id>
-  <Version>1.0.0.3</Version>
+  <Version>1.0.0.4</Version>
   <ProviderName>Internal Dev Team</ProviderName>
   <DefaultLocale>vi-VN</DefaultLocale>
   <DisplayName DefaultValue="Trợ Lý Excel AI" />
   <Description DefaultValue="Tích hợp dịch thuật, tóm tắt và phân tích dữ liệu trực tiếp bằng mô hình ngôn ngữ lớn (LLM)." />
   
-  <IconUrl DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-80.png" />
+  <IconUrl DefaultValue="https://localhost:4433/assets/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:4433/assets/icon-80.png" />
   
-  <SupportUrl DefaultValue="https://excel-ai-addin-drab.vercel.app/support" />
+  <SupportUrl DefaultValue="https://localhost:4433/support" />
   
   <Hosts>
     <Host Name="Workbook" />
   </Hosts>
   
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane" />
+    <SourceLocation DefaultValue="https://localhost:4433/taskpane" />
   </DefaultSettings>
   
   <Permissions>ReadWriteDocument</Permissions>
@@ -88,13 +88,13 @@
     
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16" DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-16.png" />
-        <bt:Image id="Icon.32" DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-32.png" />
-        <bt:Image id="Icon.80" DefaultValue="https://excel-ai-addin-drab.vercel.app/assets/icon-80.png" />
+        <bt:Image id="Icon.16" DefaultValue="https://localhost:4433/assets/icon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://localhost:4433/assets/icon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://localhost:4433/assets/icon-80.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://excel-ai-addin-drab.vercel.app/taskpane" />
-        <bt:Url id="Functions.Metadata.Url" DefaultValue="https://excel-ai-addin-drab.vercel.app/functions.json" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:4433/taskpane" />
+        <bt:Url id="Functions.Metadata.Url" DefaultValue="https://localhost:4433/functions.json" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupAI.Label" DefaultValue="Trợ Lý AI" />
