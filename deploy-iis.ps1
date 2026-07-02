@@ -3,6 +3,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# Thiết lập mã hóa UTF-8 để hiển thị tiếng Việt Unicode sắc nét trên console
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # 1. Kiểm tra quyền Administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (!$isAdmin) {

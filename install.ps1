@@ -3,6 +3,9 @@
 
 $ErrorActionPreference = "Stop"
 
+# Thiết lập mã hóa UTF-8 để hiển thị tiếng Việt Unicode sắc nét trên console
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # 1. Xác định thư mục chứa manifest.xml
 $currentDir = Get-Location
 $manifestPath = Join-Path $currentDir "manifest.xml"
