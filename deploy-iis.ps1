@@ -42,14 +42,6 @@ if (!(Test-Path $physicalPath)) {
 
 # 4. Tao hoac lien ket chung chi SSL tu ky (Create Self-Signed Cert)
 Write-Host "Dang tao chung chi SSL tu ky cho localhost va 172.16.2.17... (Creating SSL Certificate...)"
-# Xoa cac chung chi cu de tranh rac store (Bao trong khoi try/catch de tranh loi dung dot khi file dang khoa)
-try {
-    Get-ChildItem -Path cert:\LocalMachine\My, cert:\LocalMachine\Root, cert:\CurrentUser\Root -ErrorAction SilentlyContinue | Where-Object { $_.FriendlyName -eq "Excel AI Addin Localhost" } | ForEach-Object {
-        Remove-Item -Path $_.PSPath -Force -ErrorAction SilentlyContinue
-    }
-} catch {
-    Write-Host "Khong the don dep mot so chung chi cu (co the dang duoc su dung), bo qua... (Skipping cert cleanup...)"
-}
 
 # Tao chung chi voi khai bao dang IP Address cho SAN (Subject Alternative Name) de Chrome/Edge tin cay
 $cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -FriendlyName "Excel AI Addin Localhost" -TextExtension @("2.5.29.17={text}dns=localhost&ipaddress=172.16.2.17")
